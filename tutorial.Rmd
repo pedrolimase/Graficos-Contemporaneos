@@ -1,5 +1,5 @@
 ---
-title: "Trabalho - Computação em Estatística 2"
+title: "Tutorial: Gráficos Contemporâneos e Animações"
 author: ""
 date: ""
 output:
@@ -7,8 +7,6 @@ output:
       theme: cayman
       math: katex
 ---
-
-# Correlograma
 
 ```{r setup, include=FALSE}
 library(GGally)
@@ -18,6 +16,10 @@ library(kableExtra)
 
 knitr::opts_chunk$set(echo = FALSE)
 ```
+
+## Correlograma
+
+Antes de explicarmos do que de fato se trata o correlograma, precisamos conhecer o que é uma matriz de correlação. Vejamos a seguir.
 
 ## O que é uma matriz de correlação?
 
@@ -39,7 +41,7 @@ Esse tipo de representação pode ser muito útil, mas com o aumento do número 
 
 O correlograma facilita a visualização de uma matriz de correlação e ainda permite explorar alguns outros aspectos dos dados, incorporando gráficos e cores, além das medidas de correlação em si.
 
-Conforme observado na Tabela 1, a correlação entre $X$ e $Y$ é a mesma que entre $Y$ e $X$, logo, a matriz de correlação é simétrica em torno da diagonal principal. Por esta razão, podemos utilizar uma das metades para visualizar gráficos e a outra metade para obter as correlações, ou ainda utilizar uma medida de correlação para cada, por exemplo
+Conforme observado na Tabela 1, a correlação entre $X$ e $Y$ é a mesma que entre $Y$ e $X$, logo, a matriz de correlação é simétrica em torno da diagonal principal. Por esta razão, podemos utilizar uma das metades para visualizar gráficos e a outra metade para obter as correlações, ou ainda utilizar uma medida de correlação para cada, por exemplo.
 
 Além disso, como a correlação entre uma variável e ela mesma é sempre 1, e esta informação é desinteressante, pode-se aproveitar a diagonal principal para exibir gráficos acerca da distribuição das variáveis, por exemplo.
 

@@ -129,8 +129,7 @@ ggpairs(data = mtcars,
 )
 ```
 
-> Há uma série de outros parâmetros configuráveis, mas acredito que selecionei os principais dentre eles. Você pode encontrar mais em: [GGally - Extension to ‘ggplot2](https://ggobi.github.io/ggally/rd.html#ggpairs’
-)
+> Há uma série de outros parâmetros configuráveis, mas acredito que selecionei os principais dentre eles. Você pode encontrar mais em: [GGally - Extension to ‘ggplot2](https://ggobi.github.io/ggally/rd.html#ggpairs’)
 
 *** 
 

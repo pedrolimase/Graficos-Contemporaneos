@@ -1,0 +1,242 @@
+---
+title: "Trabalho - Computação em Estatística 2"
+author: ""
+date: ""
+output:
+    prettydoc::html_pretty:
+      theme: cayman
+      math: katex
+---
+
+# Correlograma
+
+```{r setup, include=FALSE}
+library(GGally)
+library(knitr)
+library(dplyr)
+library(kableExtra)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## O que é uma matriz de correlação?
+
+A matriz de correlação é uma tabela que mostra o nível de correlação (Pearson, Spearman, Kendall) entre variáveis quantitativas e ordinais. Veja o exemplo a seguir, baseado no dataset `mtcars`, que contém algumas variáveis a respeito de 32 veículos.
+
+```{r, echo=FALSE, warning=FALSE}
+mtcars %>%
+  select(mpg, disp, hp) %>%
+  cor(method="pearson") %>%
+    kable(caption="Tabela 1: Correlação linear de Pearson entre variáveis do dataset mtcars") %>%
+      kable_styling(full_width=FALSE)
+```
+
+Esse tipo de representação pode ser muito útil, mas com o aumento do número de variáveis envolvidas surge a dificuldade em identificar as correlações mais relevantes. Para simplificar essa análise, temos como uma alternativa o correlograma.
+
+***
+
+## O que é o correlograma?
+
+O correlograma facilita a visualização de uma matriz de correlação e ainda permite explorar alguns outros aspectos dos dados, incorporando gráficos e cores, além das medidas de correlação em si.
+
+Conforme observado na Tabela 1, a correlação entre $X$ e $Y$ é a mesma que entre $Y$ e $X$, logo, a matriz de correlação é simétrica em torno da diagonal principal. Por esta razão, podemos utilizar uma das metades para visualizar gráficos e a outra metade para obter as correlações, ou ainda utilizar uma medida de correlação para cada, por exemplo
+
+Além disso, como a correlação entre uma variável e ela mesma é sempre 1, e esta informação é desinteressante, pode-se aproveitar a diagonal principal para exibir gráficos acerca da distribuição das variáveis, por exemplo.
+
+Um dos pacotes encontrados mais completos em termos de elaboração desse tipo de gráfico, e que permite explorar essas propriedades descritas acima, é o pacote `GGally`.
+
+***
+
+## Correlograma com o pacote GGally
+
+```{r fig1, fig.height=4, fig.width=6, fig.align="center"}
+```
+
+O código que cria o gráfico 'básico' é relativamente simples:
+
+```{r fig1, eval=FALSE, echo=TRUE}
+library(GGally)
+
+ggpairs(data = mtcars,
+        columns = c("mpg", "disp", "hp"),
+        columnLabels = c("milhas/galão",
+                         "cilindrada",
+                         "cavalos"),
+        title = "dataset mtcars")
+```
+
+**`data`**: data frame contendo os dados;
+
+**`columns`**: indica quais variáveis serão selecionadas para o gráfico;
+
+**`columnLabels`**: rótulos para as respectivas variáveis;
+
+**`title`**: título do gráfico.
+
+***
+
+**Obs:** Com este pacote é ainda possível escolher os tipos de gráficos mostrados no correlograma (densidade/histograma/barras) de acordo com o tipo de variável (contínua/discreta), além das medidas de correlação, tanto para a parte acima quanto abaixo da diagonal principal e também da própria diagonal.
+
+Os parâmetros `upper` e `lower` te permitem alterar o que aparece nas metades superior e inferior, respectivamente. A estrutura básica para esses parâmetros é uma lista do tipo:
+
+> `upper, lower = list(continous= * , discrete= * , combo= * )`
+
+Os subparâmetros `continuous`, `discrete`, `combo` servem para definir a visualização das variáveis contínuas, discretas e ambas, respectivamente.
+
+Para o subparâmetro `continuous` você pode atribuir um dos seguintes valores:
+
+- `"points"`, se quiser ver gráficos de dispersão;
+- `"smooth"`, para a dispersão acompanhada de uma reta;
+- `"smooth_loess"`, para a dispersão acompanhada de uma curva alisada;
+- `"density"`, para a distribuição de densidade;
+- `"cor"`, para simplesmente obter a medida de correlação;
+- `"blank"`, para nada mostrar.
+
+Se quiser ainda especificar qual medida de correlação usar, pode trocar `"cor"` por `wrap("cor", method = "spearman"))`, para usar a medida de Spearman, por exemplo.
+
+Já para o subparâmetro `discrete`:
+
+- "`facetbar`", para um gráfico de barras;
+- "`blank`", para nada mostrar.
+
+Você ainda pode fazer algo parecido para escolher os gráficos que aparecem na diagonal principal, modificando o parâmetro `diag`. A sua estrutura é a mesma de `upper` e `lower`, exceto que que não recebe o subparâmetro `combo`.
+
+Dentre gráficos de variáveis contínuas da diagonal, você pode escolher: `"densityDiag"`, `"barDiag"` e `"blankDiag"`. Já para variáveis discretas: `"barDiag"`, `"blankDiag"`.
+
+Veja o exemplo a seguir:
+
+```{r fig6, warning=FALSE, message=FALSE, echo=TRUE, fig.height=4, fig.width=6, fig.align="center"}
+# Definimos a variável cyl como discreta
+mtcars$cyl <- as.factor(mtcars$cyl)
+
+ggpairs(data = mtcars,
+        columns = c("mpg", "disp", "hp", "cyl"),
+        columnLabels = c("milhas/galão",
+                         "cilindrada",
+                         "cavalos",
+                         "cilindros"),
+        title = "dataset mtcars",
+        # Trocamos a medida de correlação das variáveis contínuas exibidas acima da
+        # diagonal superior pela medida de Spearman
+        upper = list(continuous = wrap("cor", method = "spearman")),
+        # Escolhemos o gráfico de dispersão com a curva alisada para as variáveis
+        # contínuas da parte inferior
+        lower = list(continuous = "smooth_loess",
+        # Já na diagonal, veremos gráficos de barras para as variáveis discretas
+        diag = list(discrete="barDiag"))
+)
+```
+
+> Há uma série de outros parâmetros configuráveis, mas acredito que selecionei os principais dentre eles. Você pode encontrar mais em: [GGally - Extension to ‘ggplot2](https://ggobi.github.io/ggally/rd.html#ggpairs’
+)
+
+*** 
+
+Em seguida veremos uma outra forma de correlograma, feito pelo mesmo pacote. Este permite explorar um número muito maior de variáveis, resumindo a matriz de correlação em uma grade multicolorida.
+
+***
+
+## Um outro correlograma com o pacote GGally
+
+```{r eval=TRUE, echo=FALSE, warning=FALSE}
+mtcars$cyl <- as.numeric(mtcars$cyl)
+```
+
+```{r fig2, fig.height=4, fig.width=6, fig.align="center"}
+```
+
+A criação desse gráfico acima é ainda mais simples do que o anterior. Vejamos:
+
+```{r fig2, eval=FALSE, echo=TRUE}
+library(GGally)
+library(dplyr)
+
+mtcars %>%
+  select(mpg, disp, hp, cyl, wt) %>%
+  ggcorr(data = ., method = c("everything", "spearman"),
+         label=TRUE, label_round=2,
+         low="#e03531", mid="#f0bd27", high="#51b364")
+```
+
+> **Observação:** A escolha das variáveis que irão aparecer no gráfico deve ser feita previamente. Como é possível ver no código acima, usei a função `select()` do pacote `dplyr` para fazer isso.
+
+\small
+
+**`data`**: data frame contendo os dados;
+
+**`method`**: vetor contendo o tipo de tratamento aos dados faltantes ("everything", "all.obs", "complete.obs", "na.or.complete", "pairwise.complete.obs") e a medida de correlação que será usada ("pearson", "spearman", "kendall");
+
+**`label`**: ativa/desativa o aparecimento do valor das correlações;
+
+**`label_round`**: número de casas decimais mostradas no *label*;
+
+**`low`**, **`mid`**, **`high`**: cores inferior, intermediária e superior da escala de cores, respectivamente.
+
+\normalsize
+
+***
+
+## Precauções ao elaborar um correlograma
+
+Note que este tipo de gráfico só se aplica a variáveis quantitativas ou ordinais, então você deve selecionar apenas esses tipos de variáveis ao criar o correlograma.
+
+Outro cuidado a se tomar é escolher as medidas de correlação adequadas ao seu objetivo e ao tipo das variáveis.
+
+- Se a sua intenção é apenas investigar se há uma relação de crescência/decrescência entre variáveis --- não necessariamente linear ---, você pode optar por usar a correlação de Spearman ou a de Kendall.
+- Se a presença de *outliers* estiver afetando a análise, priorize o uso de uma das duas medidas robustas acima; 
+- Caso deseje analisar uma possível lineariedade entre variáveis quantitativas, você deverá usar a medida de correlação linear de Pearson.
+
+> Diferente da medida de Pearson, as medidas de Spearman e de Kendall também se aplicam a variáveis ordinais, que não apresentam magnitude, mas apenas uma relação de ordem; como por exemplo classificações na escala de péssimo, ruim, regular, bom e excelente. Além disso, tais medidas também são robustas na presença de *outliers* (ou valores discrepantes).
+
+Também é importantíssimo realizar o tratamento de dados faltantes antes de calcular as medidas de correlação. Você pode:
+
+- Simplesmente remover as observações em pares que contêm NAs;
+- Substituir os valores faltantes pela média ou mediana do restante dos valores.
+
+Recomenda-se ainda evitar o uso de rótulos ou nomes longos para as variáveis, uma vez que pode-se prejudicar a visualização das informações contidas no gráfico.
+
+***
+
+## Alguns dos usos do correlograma
+
+- Encontrar relações entre variáveis a serem exploradas:
+
+```{r fig3, eval=TRUE, echo=FALSE, fig.height=2.67, fig.width=4, fig.align="center"}
+mtcars %>%
+  ggplot(aes(x=disp, y=mpg))+
+  geom_point(stat="identity")+
+  geom_smooth(se=FALSE, method="lm")+
+  labs(x="Cilindrada", y="Milhas/galão")
+```
+
+Graças ao correlograma mostrado anteriormente, encontramos a interessante relação descrita acima, que nos leva a:
+
+- Estabelecer hipóteses e inferir sobre correlações:
+
+\scriptsize
+$\mathbf{\hspace{3em} H_0}: \text{corr}(disp, mpg) = 0 \Leftrightarrow$ Não há correlação entre a cilindrada e a autonomia dos veículos
+
+$\mathbf{\hspace{3em} H_1}: \text{corr}(disp, mpg) < 0 \Leftrightarrow$ Veículos de maior cilindrada apresentam menor automonia
+\normalsize
+
+Definimos então o nível de confiança do teste (5%), a métrica de correlação (Spearman) e prosseguimos com o teste:
+
+```{r, echo=TRUE, warning=FALSE}
+cor.test(mtcars$disp, mtcars$mpg,
+         alternative = "less", method = "spearman",
+         conf.level=0.05)
+```
+
+Dessa forma, sob a condição imposta por $\mathbf{H_0}$, o teste nos revela ser muito improvável (em relação a $\alpha$) observar na amostra uma correlação negativa entre essas variáveis tão ou mais expressiva quanto $-0,91$, conforme indicado pelo $\text{p-valor} = 3,185\cdot10^{-13}$.
+
+Portanto, rejeitamos a hipótese nula em favor da hipótese alternativa de que a relação entre cilindrada e a autonomia dos veículos é negativa.
+
+- Identificar possíveis relações causais
+
+$\hspace{3em}$ **Ex:** dois carros idênticos exceto pelo número de cilindros consomem quantidades diferentes de combustível?
+
+Essa parte, evidentemente, deve ser analisada com o maior cuidado possível, uma vez que para inferir causalidade devemos controlar todas as outras diferenças exceto as relativas às variáveis que estamos investigando.
+
+> Neste caso específico, isso claramente não pode ser feito, posto que a alteração no número de cilindros acarreta uma série de outras diferenças no veículo.
+
+Uma alternativa é realizar uma regressão de `mpg` (autonomia) sobre algumas outras variáveis como `cyl` (número de cilindros), `wt` (peso), `disp` (cilindrada) e etc, a fim de inferir a causalidade. Infelizmente, para tal precisaríamos de uma amostra mais ampla do que as 32 observações que temos disponível.

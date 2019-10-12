@@ -9,10 +9,13 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-library(GGally)
-library(knitr)
-library(dplyr)
-library(kableExtra)
+
+if (!require("pacman")){
+  install.packages("pacman")
+}
+
+library(pacman)
+p_load(prettydoc, GGally, knitr, dplyr, kableExtra)
 
 knitr::opts_chunk$set(echo = FALSE)
 ```

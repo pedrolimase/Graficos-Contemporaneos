@@ -11,8 +11,6 @@ library(dplyr)
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-## TESTETETETETES
-
 ## O que é uma matriz de correlação?
 
 É uma tabela que mostra o nível de correlação (Pearson, Spearman, Kendall, etc.) entre variáveis (quantitativas/ordinais). Veja um exemplo a seguir:
@@ -128,3 +126,5 @@ $\mathbf{\hspace{3em} H_0}$: $\text{corr}(disp, mpg) = 0$ $\mathbf{\hspace{3em} 
 - Identificar possíveis relações causais
 
 $\hspace{3em}$ **Ex:** `veículos com mais cilindros consomem mais combustível?`
+
+## PRIMEIRA COMMIT

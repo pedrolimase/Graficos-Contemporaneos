@@ -126,5 +126,3 @@ $\mathbf{\hspace{3em} H_0}$: $\text{corr}(disp, mpg) = 0$ $\mathbf{\hspace{3em} 
 - Identificar possíveis relações causais
 
 $\hspace{3em}$ **Ex:** `veículos com mais cilindros consomem mais combustível?`
-
-## PRIMEIRA COMMIT

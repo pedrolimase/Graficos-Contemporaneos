@@ -11,6 +11,8 @@ library(dplyr)
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
+## TESTETETETETES
+
 ## O que é uma matriz de correlação?
 
 É uma tabela que mostra o nível de correlação (Pearson, Spearman, Kendall, etc.) entre variáveis (quantitativas/ordinais). Veja um exemplo a seguir:
@@ -29,7 +31,7 @@ Esse tipo de representação pode ser muito útil, mas com o aumento do número 
 
 ## O que é o correlograma?
 
-O correlograma facilita a visualização de uma matriz de correlação e ainda permite explorar alguns outros aspectos dos dados, incorporando gráficos e cores, além das medidas de correlação em si.
+O correlograma é um tipo de gráfico que facilita a visualização das matrizes de correlação e ainda permite explorar alguns outros aspectos dos dados, incorporando múltiplos gráficos e cores, além das medidas de correlação em si.
 
 ## Correlograma com o pacote GGally
 

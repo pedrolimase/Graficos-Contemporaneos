@@ -29,7 +29,7 @@ Esse tipo de representação pode ser muito útil, mas com o aumento do número 
 
 ## O que é o correlograma?
 
-O correlograma facilita a visualização de uma matriz de correlação e ainda permite explorar alguns outros aspectos dos dados, incorporando gráficos e cores, além das medidas de correlação em si.
+O correlograma é um tipo de gráfico que facilita a visualização das matrizes de correlação e ainda permite explorar alguns outros aspectos dos dados, incorporando múltiplos gráficos e cores, além das medidas de correlação em si.
 
 ## Correlograma com o pacote GGally
 
@@ -126,3 +126,5 @@ $\mathbf{\hspace{3em} H_0}$: $\text{corr}(disp, mpg) = 0$ $\mathbf{\hspace{3em} 
 - Identificar possíveis relações causais
 
 $\hspace{3em}$ **Ex:** `veículos com mais cilindros consomem mais combustível?`
+
+## PRIMEIRA COMMIT

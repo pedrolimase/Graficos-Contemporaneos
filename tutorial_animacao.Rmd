@@ -1,0 +1,360 @@
+---
+title: "Tutorial Animação"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Animação
+
+##Introdução
+
+<p>
+![The Rankings](/Users/diego/OneDrive/Documentos/Imagem_2_youtube.png)
+<p/>
+
+
+Recentemente, você já deve ter visto ao menos o link de um vídeo desse tipo, não é mesmo? O canal acima, 'TheRankings', é apenas um de alguns canais famosos do youtube que cresceram bastante com vídeos de uma espécie de corrida de barras, apresentando os mais diferente tipos de dados. Conforme passa o tempo as posições das barras alteram-se e assistir os vídeos chega a ser viciante. Após ver um, a vontade de ver outro é imediata.
+
+Esse tipo de vídeo é conhecido como 'Bar Chart Race' e se trata nada mais nada menos que de uma animação que pode ser feita em um software como o `R` de forma relativamente simples.  O intuito é que, ao final desse tutorial, você seja capaz de implementar no software `R`, com algum banco de dados, uma animação semelhante a essa. 
+
+Como trata-se de um tipo de animação, falaremos um pouco também das principais noções para a construção de animações no `R`, como: Principais pacotes, principais funções, e alguns exemplos.
+
+##Objetivos
+
+- Entender o processo geral para construção de uma animação.
+- Conhecer vantagens e desvantagens do uso de animações.
+- Conhecer os principais pacotes e principais funções para animação no `R`.
+- Construir com um banco de dados real uma animação do tipo Bar Chart Race.
+
+## Processo Geral
+
+
+A animação basicamente é uma forma de representação gráfica na qual há movimento. No caso de visualização de dados, a ideia é que os dados "se movam" ou se alterem conforme o tempo passa, seja aumentando, diminuindo, mudando de cor, etc. 
+
+A noção mais importante para a construção de animações é entender que trata-se de uma sequência de gráficos, um após o outro. Tendo isso em mente, as ideias do que pode ser feito ficam mais claras.
+
+A ideia basicamente é que no seu conjunto de dados alguma variável represente esse variação ao longo do tempo. Por exemplo, número de pontos totais conquistados no ranking da ATP (Assosicação de Tenistas Profissionais) ao longo do tempo. Nesse caso a nossa variável seria o próprio tempo. Cada semana, tenistas competem em torneios e conquistam mais pontos. Se voltássemos no tempo desde a criação do ranking e a cada semana fizessemos um gráfico de barras mostrando a quantidade de pontos dos 10 tenistas com mais pontos totais, colocássemos um atras do outro numa folha de papel e folheássemos como nas animações antigas, o efeito seria o mesmo que um Bar Chart Race. Nesse exemplo, a variável em questão foi o próprio tempo, as semanas, mas poderíamos pensar em outras possibilidades para esse variável. Em fênomenos físicos, por exemplo, vários comportamentos interessantes são influenciados pela variação de temperatura, pressão, etc. A imagem a seguir representa um pouco desse processo em geral:
+
+<p>
+![Processo geral de animação](/Users/diego/OneDrive/Documentos/Imagem_1.png)
+<p/>
+
+## Vantagens e Desvantagens
+
+
+As vantagens da utilização de animações para visualização de dados são inúmeras. Se feita de maneira correta, uma animação pode ilustrar de maneira simples e prática as principais relações entre os dados, além de condensar e apresentar informações que de maneira estática não teriam o mesmo efeito e talvez não evidenciassem as diferenças e mudanças dos dados conforme o passar do tempo.
+
+Entretanto, animações podem ser mais trabalhosas e podem não trazer muitas informações relevantes a mais, apesar de seu efeito visual interessante. Por exemplo, se possuímos dados a respeito da eficiência de 4 tipos diferentes de carro, poderíamos fazer uma animação com 4 gráficos, um para cada tipo de carro. Porém, com um número baixo de dados, o efeito visual não é interessante, e valeria mais a pena a utilização de um painel, como com a função `facet_wrap` do pacote `ggplot2`. 
+
+Mas existem casos em que o número de dados é relativamente baixo, mas indicam uma progressão no tempo, ou em qualquer outra variável. Nesse caso, pode ser interessante realiizar a interpolação dos dados, isto é, criar dados intermediários baseado em algum tipo de modelo, após isso, uma animação já possuiria efeitos interessantes.
+
+Em resumo, confira com cuidado os dados que estão sendo trabalhados antes de decidir por uma animação, mas, se após essa análise a conclusão é de que uma animação vale a pena, então vamos descobrir um pouco mais sobre suas implementações.
+
+# Pacotes
+
+
+Pesquisando para construir um Bar Chart Race, alguns pacotes apareceram ou foram citados algumas vezes, como o `animation`, o `gganimate`, o `tweenr` e o `plotly`. Os pacotes, de fato, utilizados neste tutorial, foram o `gganimate` e o `tweenr`. 
+
+O `animation`é um pacote mais geral criado por Yihui Xie que permite grande controle sobre suas animações. Entretanto, sua linguagem pode ser mais complexa e confusa. 
+
+Para mais informações sobre esse pacote e suas utilizações podem ser visitados:
+
+[Manual do animation](https://cran.r-project.org/web/packages/animation/index.html)
+
+[Breve exemplo](http://www.mlearningacademy.com/2018/07/23/two-simple-animation-techniques-with-r/)
+
+O `plotly` é um pacote criado por vários autores voltado, principalmente, para criação de gráficos interativos. Dentro do pacote também existem, claro, funções que permitem animações. É um pacote que permite a criação de gráficos sensacionais e com certeza vale a pena ser explorado futuramente. Para mais informações:
+
+[Manual do plotly](https://cran.r-project.org/web/packages/plotly/plotly.pdf)
+
+[Breve exemplo](https://towardsdatascience.com/animating-your-data-visualizations-like-a-boss-using-r-f94ae20843e3)
+
+Os pacotes `tweenr` e `gganimate`, são pacotes mantidos por Thomas Lin Pedersen. O `gganimate` funciona como um pacote expansão do `ggplot2`. Sua principal vantagem é a simplicidade. Com algumas linhas a mais no seu `ggplot`, é possível gerar uma animação razoável. Sua linguagem é pouco confusa e para um primeiro contato é um excelente pacote.
+
+O pacote `tweenr` é um pacote auxiliar, que permite a criação de dados intermediários, "gêmeos". Como assim? Suponha que você possui dados ao longo do tempo, referentes a 1950, 1960, seguindo assim até 2010. Em suma, você possui dados de apenas 7 instantes no tempo. Um gif com 7 frames não é lá tão interessante certo? O pacote permite de várias formas, a depender do conjunto de dados que você possui, interpolar os dados, com funções da família `tween_*` e por meio de vários modelos com os chamados `ease`. Não exploraremos a fundo o pacote, mas será utlizado uma ou outra função. Para um conhecimento específico de cada função do pacote e suas utilizações vale a pena visitar o [manual do tweenr](https://cran.r-project.org/web/packages/tweenr/tweenr.pdf)
+
+## gganimate
+
+O pacote `gganimate`, como dito acima, funciona como uma extensão do `ggplot2` para animações. Ele possui duas interfaces, uma mais antiga e uma mais recente que será a utilizada. As principais diferenças são quanto à sintaxe. Na antiga, a animação era basicamente uma nova estética no `ggplot`, já na nova, para a criação de animações foram criadas funções específicas para tal.
+
+Vamos começar! Para tanto vamos carregar pacotes necessários para manipular dados, realizar animações e o `gapminder`, para ser nosso conjunto de dados exemplo. Caso não tenha algum desses pacotes instalados, instale com a função `install.packages`.
+
+```
+library(tweenr)
+library(gapminder)
+library(ggplot2)
+library(gganimate)
+library(scales)
+library(dplyr)
+library(tidyverse) 
+library(ggimage)
+library(av)
+```
+
+```{r include=FALSE}
+library(tweenr)
+library(gapminder)
+library(ggplot2)
+library(gganimate)
+library(scales)
+library(dplyr)
+library(tidyverse) 
+library(ggimage)
+library(av)
+```
+
+Como dito, animações são vários gráficos em sequência, com uma variável que será responsável por criar essa sequência. Vamos dar uma olhada no nosso conjunto de dados e analisar o que pode ser feito:
+
+```{r echo=TRUE}
+head(gapminder)
+```
+
+Podemos observar que a variável natural para criar a sequência é o ano, ou seja, a variável `year`. Portanto, para um ano fixo no nosso conjunto de dados, 1952, por exemplo, vamos criar um simples gráfico estático de expectativa de vida, `lifeExp` por tamanho da população `pop` e colorir por continente ,`continent`, com nosso querido `ggplot`.
+
+
+```{r echo=TRUE}
+estatico_1952<- ggplot(filter(gapminder,year==1952), aes(x=pop, y=lifeExp, color= continent))+geom_point()
+estatico_1952
+```
+
+O que aconteceria, se não filtrássemos para o ano fixo de 1952?
+
+```{r echo=TRUE}
+estatico<- ggplot(filter(gapminder), aes(x=pop, y=lifeExp, color= continent))+geom_point()
+estatico
+```
+
+Já parece possível enxergar o movimento não é mesmo? Vamos agora  inserir esse movimento, com a função `transition_states`. 
+
+```{r echo=TRUE}
+estatico+transition_states(year)
+```
+
+
+A função `transition_states` para cada valor da variável `year` cria um chamado "state", estado, desse modo cria um gráfico para cada ano, e além disso posiciona gráficos intermediários para fazer a transição. Apesar de ser uma bom começo, talvez pudéssemos deixar a animação mais suave. 
+
+A função possui dois parâmetros importantes `transition_length` e `state_length`. O parâmetro `transition_length`  trata-se basicamente do tempo relativo a transição entre os estados. E `state_length` o tempo relativo que a animação fica "parada" no estado. Por default os valores de cada um deles é 1. Por isso, se você cronometrar na cabeça, pode observar que o tempo de transição em cada estado e o tempo parado em cada estado foi próximo do mesmo.
+
+Vamos fazer algumas experimentações:
+```{r echo=TRUE}
+# aumentando o tempo do estado
+estatico+transition_states(year, transition_length = 1, state_length = 3)
+```
+
+Observamos que o tempo da transição foi um pouco mais curto se comparado ao tempo parado. 
+
+E fazendo o contrário?
+
+```{r echo=TRUE}
+# aumentando o tempo de transição
+estatico+transition_states(year, transition_length = 4, state_length = 1)
+```
+
+Agora observamos um tempo um pouco mais demorado na transição e um efeito um pouco mais suave. 
+
+Mas, ainda não parece ter o efeito ideal certo? O ideal parece ser que não houvesse essa pausa exacerbada. Isso se deve pois a função `transition_states` foi pensada para uma transição mais "discreta" digamos assim. 
+
+Tempo é uma variável contínua, logo não parece necessário essa parada em cada estado. O ideal é que o tempo gasto em cada frame de nossa animação fosse o mesmo no nosso exemplo. Para tanto, temos duas possibilidades. Utilizar a função `transiton_time` feita para o nosso caso, em que os estados são o tempo. Ou, no parâmetro `state_length` imputarmos o valor 0.
+
+```{r echo=TRUE}
+#Imputando o valor 0
+estatico+transition_states(year, transition_length = 4, state_length = 0)
+```
+
+O efeito já foi muito mais próximo do esperado não é mesmo?
+
+```{r echo=TRUE}
+# Utilizando transition_time
+estatico+transition_time(year)
+```
+
+As animações obtidas foram praticamente as mesmas correto? O objetivo foi notar que o que fizemos com a função `transition_time`, podemos fazer de forma igual com a função `transition_states`, desde que conheçamos bem o funcionamento dos parâmetros.
+
+Vamos fazer agora um exemplo em que faça sentido utilizar a função `transition_states`, ou seja, em que a transição seja por variáveis mais "discretas". Para um ano específico, vamos fazer os pontos transitarem entre os continentes, que tal?
+
+```{r echo=TRUE}
+estatico_2007<-ggplot(filter(gapminder,year==2007), aes(x=pop, y=lifeExp))+geom_point()
+estatico_2007+transition_states(continent, transition_length = 4)
+```
+
+Agora fez mais sentido a parada não é mesmo? Mas, por outro lado, se não houver nenhuma explicação no gráfico sobre a que se referem essas paradas, quem estiver assistindo dificilmente entenderá. 
+
+Ainda bem que a função `transition_state` possui as chamadas "label variables". Label variables basicamente são variáveis relativas ao estado da animação e que podemos colocar como legenda no nosso gráfico. A label variable mais utilizada nesse caso é o `closest_state`. Como o próprio nome sugere, o estado mais próximo do frame da animação. No exemplo acima temos o seguinte resultado:
+
+```{r echo=TRUE}
+estatico_2007+transition_states(continent, transition_length =4)+labs(title="state: {closest_state}")
+```
+
+Por fim, vamos ver um último tipo de transição. No pacote `gganimate` existem várias outras transições, que ficam como futura leitura. A `transition_reveal` é uma animação que vai revelando os dados conforme o tempo. Por exemplo, em um gráfico de linhas, em vez de já mostrar todo o gráfico pronto, podemos ir revelando aos poucos por meio de uma animação para observar a velocidade com que as transições ocorrem. Vejamos esse exemplo:
+
+```{r echo=TRUE}
+paises_tr<- gapminder%>%filter(country=="Afghanistan"|country== "Australia"|country=="Brazil")
+ggplot(paises_tr, aes(x=year, y=pop, color=country))+geom_line()+transition_reveal(year)
+```
+
+Apesar de já termos bastante controle sobre as animações com os parâmetros e as transições, ainda não é o bastante para termos controle total sobre nossa animação. Por exemplo, se você observar bem, todas as animações que fizemos duram exatamente 10 segundos. Por que isso acontece?
+
+Isso se deve ao fato de por dentro das funções da família `transition` rodar a função `animate`. Essa função permite alterar vários aspectos na animação, mas, principalmente dois: o número de frames `nframes` e a velocidade em frames por segundo `fps`. 
+
+Por default, os valores de cada um desses parâmetros são 100 e 10 respectivamente. Ou seja, para quaisquer que sejam os valores para os parâmetros das funções `transition`, nossa animação teria 100 frames a 10 frames por segundo. Se nossa matemática está em dia, cada animação duraria 10 segundos. 
+
+Vamos voltar a nossa primeira animação com a função `transition_time` e alterar os parâmetros da função animate.
+
+```{r echo=TRUE}
+anim<- estatico+transition_time(year)
+animate(anim, nframes = 300, fps=15)
+```
+
+
+300 divido por 15 resultam em 20 segundos não é mesmo? Quanto maior o número de frames e maior a velocidade, mais suave tende a ser nossa animação. Entretanto, não existe almoço grátis. Quanto maior esses valores, maior o tempo de renderização. Portanto, antes de rodar uma animação com 4000 frames, teste os aspectos que você deseja observar com uma quantidade menor de frames. Se estiver tudo como esperado aumente para a quantidade desejada. 
+
+Com o que vimos até aqui, a menos de alguns detalhes, já somos capazes de fazer um Bar Chart Race próximo da qualidade dos vídeos que vemos no youtube. Só acredita vendo? vamos tentar então!
+
+## Bar Chart Race
+
+Vamos agora fazer um Bar Chart Race  do top 10 de países com maior PIB per capita, que tal?
+
+Vamos utilizar nesse caso a função `transition_states`. O natural seria a `transition_time`, entretanto, essa função não nos permite controlar muito bem o que ocorre nas transições, fica o desafio ao leitor tentar imputar o mesmo gráfico com essa função. 
+
+Em vez de depender da função para saber o que ocorre entre os frames, vamos nós mesmos fazer as devidas interpolações entre os dados. Lembram-se do pacote `tweenr`? Pois bem, chegou o momento dele. 
+
+Primeiramente vamos editar nosso conjunto de dados um pouco e adicionar uma coluna explicitando o modelo de interpolação que queremos. No nosso caso o modelo, `ease`, será linear.
+
+```{r echo=TRUE}
+# Editando o conjunto de dados
+gapminder_edit <- gapminder %>%
+  arrange(country, year) %>%
+  select(gdpPercap, year,country) %>%
+  mutate(ease="linear")
+```
+
+Agora vamos usar a função `tween_elements`. Basicamente, essa função exige 3 variáveis dos nossos dados: O tempo que será a base para a interpolação,`time`, no nosso caso a variávrel `year`. Uma variável que identificará os dados e não se alterará com a interpolação chamada `group` No nosso caso o país `country`. Por fim, a variável `ease`, nosso modelo de interpolação. 
+
+Além disso, um parâmetro importante servirá para decidir a quantidade de "gêmeos" que criaremos no total. Tal parâmetro é o `nframes`. Note que o número de fato de frames criados é o número imputado mais um, pois o frame 0 também é incluído. Com todas essas considerações, o seguite código é o que estamos procurando:
+
+```{r echo=TRUE}
+# Criando gêmos por interpolação linear
+gapminder_tween <- tween_elements(gapminder_edit,
+                                  "year", "country", "ease", nframes = 999) %>%
+  mutate(pais = .group)
+```
+
+Vamos agora, em cada ano, coletar apenas os 10 países com maior PIB per capita. Além disso, vamos replicar uma coluna com os nomes dos países para que, posteriormente, possamos adicionar o código ISO de cada país. Esse passo será importante para que possamos colocar as bandeiras de cada país no gráfico.
+
+```{r echo=TRUE}
+# Ranqueando
+anim_gapminder_tween<- gapminder_tween%>%
+  group_by(year)%>%
+  mutate(rank = min_rank(-gdpPercap)* 1)%>%
+ filter(rank <= 10)%>%
+  ungroup()%>%mutate(ISO=as.factor(pais))
+```
+
+OK, estamos quase lá. Vamos agora ajeitar as siglas. O método para inserção das siglas nesse caso foi um tanto quanto braçal. Com certeza há modos mais eficazes para isso no caso de muitos países, mas como o foco do tutorial não é esse, vamos de método braçal mesmo.
+
+```{r echo=TRUE}
+#ajeitando as siglas
+siglas<-c("AU","AT", "BH", "CA", "DK", "GA", "DE", "HK", "IS","IE","JP",
+          "KW","LY","NL","NZ","NO","SA","SG","SE","CH","GB","US")
+anim_gapminder<- anim_gapminder_tween
+levels(anim_gapminder$ISO)<-siglas
+```
+
+Agora sim, vamos ao que interessa, o gráfico. Nesse caso as dificuldades são muito mais estéticas do `ggplot2` do que com a animação. Basicamente, precisamos de um gráfico de barras do rank dos países pelo PIB per capita. Conforme o tempo passa, os dados irão variar e os 10 melhores posicionados também se alterarão. É tudo bastante intuitivo, exceto um aspecto. A geometria utilizada não foi de barras, mas sim `geom_tile`. Por que isso? No quesito animação essa geometria é menos pesada e a animação fica mais leve. 
+
+Sugiro ao leitor, rodar parte por parte o código para entender bem o que cada função faz. Existem vários tutoriais na internet para a criação de um Bar Chart Race. A menos de pequenas detalhes, o modelo de gráfico é bem similar, podendo ser aproveitado muito dos códigos compartilhados nesses tutoriais. 
+
+É importante ressaltar também a função `geom_flag` do pacote `ggimage` que permite a inclusão das bandeiras dos países, por meio do código ISO dos países. Como a imagem das bandeiras é baixada da internet, para que esse código funcione corretamente é necessário de uma conexão com a rede.
+
+```{r echo=TRUE}
+staticoband<-ggplot(anim_gapminder,aes(x=rank))+
+  geom_tile(aes(y=gdpPercap/2, height=gdpPercap, width = 0.9), fill = "yellow", alpha = 0.9)+
+  geom_flag(aes(y = -8500, image = ISO), size = 0.11)+
+  geom_text(aes(y=gdpPercap/2,label = (comma(gdpPercap,decimal.mark = ",", big.mark = ".")),size = 4, hjust=0.46)) +
+  scale_x_reverse()+
+  coord_flip(clip = "off", expand = FALSE)+
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position="none",
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major.x = element_line( size=.1, color="red" ),
+        panel.grid.minor.x = element_line( size=.1, color="red" ),
+        plot.title=element_text(size=25, hjust=0.5, face="bold", colour="grey", vjust=-1),
+        plot.subtitle=element_text(size=18, hjust=0.5, face="italic", color="grey"),
+        plot.caption =element_text(size=8, hjust=0.5, face="italic", color="grey"),
+        plot.background=element_rect(fill="black", color = " white"),
+        plot.margin = margin(1, 1, 2, 3, "cm"))
+```
+
+Tudo pronto para nossa animação. Como dito anteriormente, a interpolação é boa, pois nos permite controlar cada frame de nosssa animação. Portanto, vamos utilizar `transition_length = 0` e `state_length=1`. Desse modo, cada frame será um estado, e os estados foram criados por nós com a função `tween_elements` e qualquer alteração que desejemos fazer, basta alterar o que seja necessário no momento da interpolação. 
+
+Como temos ao todo 1000 frames criados, nossa animação sem nenhuma transição deverá ter exatamente 1000 frames. Caso seja um número maior, a animação cortará os frames a mais e o resultado será o mesmo. Caso seja inferior, os frames faltantes não farão parte do resultado final e a animação não ficará completa. Como feito em um dos exemplos acima, adicionaremos uma legenda móvel para cada frame.
+
+Quase tudo semelhante ao vídeo do youtube, exceto uma coisa. O vídeo do youtube não é um gif, e tem música. Não seja por isso, adicione sua música favorita ao diretório do R e com o parâmetro `renderer` escolha uma opção de renderizador de vídeo com áudio, como o `av_renderer`. No parâmetro `audio` da função, coloque o arquivo de sua música favorita.
+
+```{r echo=TRUE}
+anim_band<- staticoband + transition_states(year, transition_length = 0, state_length = 1) +
+    view_follow(fixed_y = TRUE) + 
+    labs(title = 'PIB per Capita (USD) :{round(as.numeric(closest_state))}',  
+         subtitle  =  "Top 10 Países")
+  animate(anim_band, 1000, renderer = av_renderer(audio = "audio_trabalho.mp3"))
+```
+
+Nada mal para um primeiro contato não é mesmo? Existem vários outros parâmetros, pacotes e funções que podem ser utilizados para construir belas animações e para que você se torne um especialista.
+
+Consulte o [manual do gganimate](https://cran.r-project.org/web/packages/gganimate/gganimate.pdf) e estude os outros pacotes para novas aplicações. Isso é tudo para esse tutorial.
+
+Boa sorte com suas futuras animações! ;)
+
+##Referências
+
+[https://github.com/thomasp85/gganimate/issues/137](https://github.com/thomasp85/gganimate/issues/137)
+
+[https://www.data-imaginist.com/2019/gganimate-has-transitioned-to-a-state-of-release/](https://www.data-imaginist.com/2019/gganimate-has-transitioned-to-a-state-of-release/)
+
+[https://blog.revolutionanalytics.com/2017/05/tweenr.html](https://blog.revolutionanalytics.com/2017/05/tweenr.html)
+
+[https://www.datanovia.com/en/blog/gganimate-how-to-create-plots-with-beautiful-animation-in-r/](https://www.datanovia.com/en/blog/gganimate-how-to-create-plots-with-beautiful-animation-in-r/)
+
+[https://github.com/ropenscilabs/learngganimate/blob/master/animate.md](https://github.com/ropenscilabs/learngganimate/blob/master/animate.md)
+
+[https://towardsdatascience.com/animating-your-data-visualizations-like-a-boss-using-r-f94ae20843e3](https://towardsdatascience.com/animating-your-data-visualizations-like-a-boss-using-r-f94ae20843e3)
+
+[https://github.com/behdad/region-flags/tree/gh-pages/png](https://github.com/behdad/region-flags/tree/gh-pages/png)
+
+[https://towardsdatascience.com/create-animated-bar-charts-using-r-31d09e5841da](https://towardsdatascience.com/create-animated-bar-charts-using-r-31d09e5841da)
+
+[https://emilykuehler.github.io/bar-chart-race/](https://emilykuehler.github.io/bar-chart-race/)
+
+[https://www.aflgains.com/post/barchartrace_writeup/](https://www.aflgains.com/post/barchartrace_writeup/)
+
+[https://github.com/thomasp85/tweenr](https://github.com/thomasp85/tweenr)
+
+[https://www.youtube.com/channel/UCv0Fm-Ge7D_zmN9Gw9x2cMA/videos](https://www.youtube.com/channel/UCv0Fm-Ge7D_zmN9Gw9x2cMA/videos)
+
+[https://towardsdatascience.com/how-to-do-that-animated-race-bar-chart-57f3a8ff27a8](https://towardsdatascience.com/how-to-do-that-animated-race-bar-chart-57f3a8ff27a8)
+
+[https://stackoverflow.com/questions/25341581/r-geom-tile-ggplot2-what-kind-of-stat-is-applied](https://stackoverflow.com/questions/25341581/r-geom-tile-ggplot2-what-kind-of-stat-is-applied)
+
+[https://towardsdatascience.com/create-animated-bar-charts-using-r-31d09e5841da](https://towardsdatascience.com/create-animated-bar-charts-using-r-31d09e5841da)
+
+[https://www.r-bloggers.com/how-to-create-a-bar-chart-race-in-r-mapping-united-states-city-population-1790-2010/](https://www.r-bloggers.com/how-to-create-a-bar-chart-race-in-r-mapping-united-states-city-population-1790-2010/)
+
+[https://github.com/ropenscilabs/learngganimate](https://github.com/ropenscilabs/learngganimate)
+
+
+
+
+

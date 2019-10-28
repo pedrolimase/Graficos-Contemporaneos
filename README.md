@@ -1,6 +1,8 @@
 # Gráficos Contemporâneos
 Repositório do trabalho sobre Gráficos Contemporâneos, apresentado no dia 30 de outubro de 2019 para a disciplina de Computação em Estatística 2 com o professor Guilherme Rodrigues.
 
+**Integrantes do grupo:** Carolina, Diego, Emmanuel, Pedro, Juliana e Thomaz
+
 Gráficos abordados:
 - Coordenadas Paralelas
 - Correlograma
@@ -11,6 +13,4 @@ Gráficos abordados:
 
 Para cada um dos gráficos, buscamos explicar em detalhes a implementação em R, demonstrar alguns exemplos e aplicações, além dos cuidados na elaboração.
 
-*Neste repositório encontram-se todos os códigos em R utilizados, tanto do slide da apresentação quanto dos tutoriais.*
-
-**Integrantes do grupo:** Carolina, Diego, Emmanuel, Pedro, Juliana e Thomaz
+*Em face da dificuldade por reunir os slides e tutoriais em uma só parte, optamos por mantê-los separados, cada um em sua respectiva pasta no repositório.*

@@ -1,0 +1,231 @@
+---
+title: "Animações"
+output: 
+  ioslides_presentation:
+    fig_width: 6 
+    fig_height: 4 
+---
+## Animações
+
+- Noção Geral
+- Objetivos
+- Vantagens e Desvantagens
+- Pacotes
+- `gganimate`
+- Bar Chart Race
+
+## O que são
+
+- Movimento
+- Sequência de Gráficos
+- Variável sequenciadora (Em geral, o tempo)
+
+## Processo geral
+![Processo geral de animação](/Users/diego/OneDrive/Documentos/Imagem_1.png)
+
+## Objetivos
+
+- Vantagens e Desvantagens
+- Pacotes e funções no `R`.
+- Construir um Bar Chart Race.
+
+##  {.centered} 
+
+![The Rankings](/Users/diego/OneDrive/Documentos/Imagem_slide.png)
+
+## Pacotes
+
+- `gganimate`
+- `tweenr`
+- `plotly`
+- `animation`
+
+## Carregando pacotes necessários {.smaller}
+
+```
+library(tweenr)
+library(gapminder)
+library(ggplot2)
+library(gganimate)
+library(scales)
+library(dplyr)
+library(tidyverse) 
+library(ggimage)
+library(av)
+```
+
+```{r include=FALSE}
+library(tweenr)
+library(gapminder)
+library(ggplot2)
+library(gganimate)
+library(scales)
+library(dplyr)
+library(tidyverse) 
+library(ggimage)
+library(av)
+```
+
+## Conjunto de dados {.smaller}
+
+```{r echo=TRUE}
+head(gapminder)
+```
+
+## Estático 1952 
+```{r echo=TRUE}
+estatico_1952<- ggplot(filter(gapminder,year==1952),
+aes(x=pop, y=lifeExp, color= continent))+ geom_point()
+estatico_1952
+```
+
+## Estático Geral
+```{r echo=TRUE, }
+estatico<- ggplot(filter(gapminder), 
+aes(x=pop, y=lifeExp, color= continent))+geom_point()
+estatico
+```
+
+
+## Animando `transition_states`
+
+```{r echo=TRUE, out.width = "68%"}
+estatico+transition_states(year)
+```
+
+## Parâmetros importantes
+
+- `transition_length`
+- `state_length`
+
+## Alterando parâmetros
+```{r echo=TRUE, out.width= "68%"}
+estatico+transition_states(year,transition_length = 4,state_length = 0)
+```
+
+## `transition_time`
+
+```{r echo=TRUE, out.width= "68%"}
+estatico+transition_time(year)
+```
+
+## Estados discretos
+
+```{r echo=TRUE, out.width="64%"}
+estatico_2007<-ggplot(filter(gapminder,year==2007),
+aes(x=pop, y=lifeExp))+geom_point()
+estatico_2007+transition_states(continent, transition_length = 4)
+```
+
+## Label Variables
+
+```{r echo=TRUE, out.width="59%"}
+estatico_2007+transition_states(continent,transition_length=4)+
+labs(title="state:{closest_state}")
+```
+
+## `transition_reveal` {.smaller}
+
+```{r echo=TRUE, fig.width=4, fig.height=1.7}
+p<-gapminder%>%filter(country=="Australia"|country=="Japan"|country=="Brazil")
+ggplot(p,aes(x=year,y=pop,color=country))+geom_line()+transition_reveal(year)
+```
+
+
+## `animate`
+
+```{r echo=TRUE, out.width="56%"}
+anim<- estatico+transition_time(year)
+animate(anim, nframes = 100, fps=20)
+```
+
+## Bar Chart Race 
+- Corrida PIB per capita ao longo dos anos
+- Passo a Passo
+
+## Passo 1 Editar conjunto de dados
+```{r echo=TRUE}
+# Editando o conjunto de dados
+gapminder_edit <- gapminder %>%
+  arrange(country, year) %>%
+  select(gdpPercap, year,country) %>%
+  mutate(ease="linear")
+```
+
+## Passo 2 Interpolar
+
+```{r echo=TRUE}
+# Criando gêmos por interpolação linear
+gapminder_tween <- tween_elements(gapminder_edit,
+   "year", "country", "ease", nframes = 999) %>%
+  mutate(pais = .group)
+```
+
+## Passo 3 Ranquear 
+
+```{r echo=TRUE}
+# Ranqueando
+anim_gapminder_tween<- gapminder_tween%>%
+  group_by(year)%>%
+  mutate(rank = min_rank(-gdpPercap)* 1)%>%
+ filter(rank <= 10)%>%
+  ungroup()%>%mutate(ISO=as.factor(pais))
+```
+
+## Passo 4 ajeitar siglas
+
+```{r echo=TRUE}
+#ajeitando as siglas
+siglas<-c("AU","AT", "BH", "CA", "DK", "GA", "DE",
+"HK","IS","IE","JP","KW","LY","NL","NZ","NO",
+"SA","SG","SE","CH","GB","US")
+anim_gapminder<- anim_gapminder_tween
+levels(anim_gapminder$ISO)<-siglas
+```
+
+## Passo 5 Gráfico estático {.smaller}
+
+```{r echo=TRUE}
+staticoband<-ggplot(anim_gapminder,aes(x=rank))+
+geom_tile(aes(y=gdpPercap/2, height=gdpPercap, width = 0.9),
+fill = "yellow",alpha = 0.9)+
+geom_flag(aes(y = -8500, image = ISO), size = 0.11)+
+geom_text(aes(y=gdpPercap/2,
+label=(comma(gdpPercap,decimal.mark=",",big.mark=".")),size = 4, hjust=0.46)) +
+scale_x_reverse()+
+coord_flip(clip = "off", expand = FALSE)+
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position="none",
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major.x = element_line( size=.1, color="red" ),
+        panel.grid.minor.x = element_line( size=.1, color="red" ), 
+plot.title=element_text(size=25,hjust=0.5,face="bold",colour="grey",vjust=-1),
+plot.subtitle=element_text(size=18, hjust=0.5, face="italic", color="grey"),
+plot.caption =element_text(size=8, hjust=0.5, face="italic", color="grey"),
+plot.background=element_rect(fill="black", color = " white"),
+plot.margin = margin(1, 1, 2, 3, "cm"))
+```
+
+## Passo 6  animação {.smaller}
+
+```{r echo=TRUE, fig.width=4, fig.height=1.7}
+anim_band<- staticoband+transition_states(year, transition_length=0,state_length= 1)+
+view_follow(fixed_y = TRUE)+ 
+labs(title='PIB per Capita (USD) :{round(as.numeric(closest_state))}',  
+subtitle  =  "Top 10 Países")
+animate(anim_band, 100)
+```
+
+
+
+
+
+

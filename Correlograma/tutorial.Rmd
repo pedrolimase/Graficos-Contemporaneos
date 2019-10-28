@@ -1,7 +1,8 @@
 ---
-title: "Tutorial: Gráficos Contemporâneos e Animações"
-author: ""
-date: ""
+title: "Gráficos Contemporâneos"
+subtitle: "Correlograma"
+institute: "UnB - Universidade de Brasília"
+date: "30 de outubro de 2019"
 output:
     prettydoc::html_pretty:
       theme: cayman
@@ -15,28 +16,33 @@ if (!require("pacman")){
 }
 
 library(pacman)
-p_load(prettydoc, GGally, knitr, dplyr, kableExtra)
+p_load(prettydoc, GGally, knitr, dplyr, kableExtra, ISLR)
+
+auto_dataset <- Auto
+auto_dataset$cylinders <- as.factor(auto_dataset$cylinders)
 
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-## Correlograma
+# Correlograma
 
 Antes de explicarmos do que de fato se trata o correlograma, precisamos conhecer o que é uma matriz de correlação. Vejamos a seguir.
 
 ## O que é uma matriz de correlação?
 
-A matriz de correlação é uma tabela que mostra o nível de correlação (Pearson, Spearman, Kendall) entre variáveis quantitativas e ordinais. Veja o exemplo a seguir, baseado no dataset `mtcars`, que contém algumas variáveis a respeito de 32 veículos.
+A matriz de correlação é uma tabela que mostra o nível de correlação (Pearson, Spearman ou Kendall) entre variáveis quantitativas e ordinais. Veja o exemplo a seguir, baseado no dataset `Auto`, que contém algumas variáveis a respeito de 392 veículos.
 
 ```{r, echo=FALSE, warning=FALSE}
-mtcars %>%
-  select(mpg, disp, hp) %>%
+auto_dataset %>%
+  select(mpg, displacement, horsepower) %>%
   cor(method="pearson") %>%
-    kable(caption="Tabela 1: Correlação linear de Pearson entre variáveis do dataset mtcars") %>%
+    kable(caption="Tabela 1: Correlação linear de Pearson entre variáveis do dataset Auto") %>%
       kable_styling(full_width=FALSE)
 ```
 
 Esse tipo de representação pode ser muito útil, mas com o aumento do número de variáveis envolvidas surge a dificuldade em identificar as correlações mais relevantes. Para simplificar essa análise, temos como uma alternativa o correlograma.
+
+**Obs:** Os dados do dataset `Auto` podem ser acessados através do pacote *ISRL*.
 
 ***
 
@@ -44,9 +50,9 @@ Esse tipo de representação pode ser muito útil, mas com o aumento do número 
 
 O correlograma facilita a visualização de uma matriz de correlação e ainda permite explorar alguns outros aspectos dos dados, incorporando gráficos e cores, além das medidas de correlação em si.
 
-Conforme observado na Tabela 1, a correlação entre $X$ e $Y$ é a mesma que entre $Y$ e $X$, logo, a matriz de correlação é simétrica em torno da diagonal principal. Por esta razão, podemos utilizar uma das metades para visualizar gráficos e a outra metade para obter as correlações, ou ainda utilizar uma medida de correlação para cada, por exemplo.
+Conforme observado na *Tabela 1*, a correlação entre $X$ e $Y$ é a mesma que entre $Y$ e $X$, logo, a matriz de correlação é simétrica em torno da diagonal principal. Por esta razão, podemos utilizar uma das metades para visualizar gráficos e a outra metade para obter as correlações, ou ainda utilizar uma medida de correlação para cada, por exemplo.
 
-Além disso, como a correlação entre uma variável e ela mesma é sempre 1, e esta informação é desinteressante, pode-se aproveitar a diagonal principal para exibir gráficos acerca da distribuição das variáveis, por exemplo.
+Além disso, como a correlação entre uma variável e ela mesma é sempre unitária. Podemos então descartar essa informação desinteressante e aproveitar a diagonal principal para exibir gráficos acerca da distribuição das variáveis, por exemplo.
 
 Um dos pacotes encontrados mais completos em termos de elaboração desse tipo de gráfico, e que permite explorar essas propriedades descritas acima, é o pacote `GGally`.
 
@@ -62,12 +68,12 @@ O código que cria o gráfico 'básico' é relativamente simples:
 ```{r fig1, eval=FALSE, echo=TRUE}
 library(GGally)
 
-ggpairs(data = mtcars,
-        columns = c("mpg", "disp", "hp"),
+ggpairs(data = auto_dataset,
+        columns = c("mpg", "displacement", "horsepower"),
         columnLabels = c("milhas/galão",
                          "cilindrada",
                          "cavalos"),
-        title = "dataset mtcars")
+        title = "dataset Auto")
 ```
 
 **`data`**: data frame contendo os dados;
@@ -108,28 +114,35 @@ Você ainda pode fazer algo parecido para escolher os gráficos que aparecem na 
 
 Dentre gráficos de variáveis contínuas da diagonal, você pode escolher: `"densityDiag"`, `"barDiag"` e `"blankDiag"`. Já para variáveis discretas: `"barDiag"`, `"blankDiag"`.
 
+> Como é possível perceber abaixo, é possível ainda passar parâmetros de estética do ggplot para o ggpairs.
+
 Veja o exemplo a seguir:
 
 ```{r fig6, warning=FALSE, message=FALSE, echo=TRUE, fig.height=4, fig.width=6, fig.align="center"}
 # Definimos a variável cyl como discreta
-mtcars$cyl <- as.factor(mtcars$cyl)
+auto_dataset$cylinders <- as.factor(auto_dataset$cylinders)
 
-ggpairs(data = mtcars,
-        columns = c("mpg", "disp", "hp", "cyl"),
-        columnLabels = c("milhas/galão",
-                         "cilindrada",
-                         "cavalos",
-                         "cilindros"),
-        title = "dataset mtcars",
-        # Trocamos a medida de correlação das variáveis contínuas exibidas acima da
-        # diagonal superior pela medida de Spearman
-        upper = list(continuous = wrap("cor", method = "spearman")),
-        # Escolhemos o gráfico de dispersão com a curva alisada para as variáveis
-        # contínuas da parte inferior
-        lower = list(continuous = "smooth_loess",
-        # Já na diagonal, veremos gráficos de barras para as variáveis discretas
-        diag = list(discrete="barDiag"))
-)
+auto_dataset %>%
+  # Definição da variável indicadora da década do veículo 
+  mutate(decade = as.factor(10*(year %/% 10)) ) %>%
+  ggpairs(data = .,
+          columns = c("mpg", "displacement", "horsepower", "cylinders"),
+          columnLabels = c("milhas/galão",
+                           "cilindrada",
+                           "cavalos",
+                           "cilindros"),
+          title = "dataset Auto",
+          # Destacar a cor de acordo com a década do veículo
+          mapping = aes(color = decade, alpha = 1/3),
+          # Trocamos a medida de correlação das variáveis contínuas exibidas acima da
+          # diagonal superior pela medida de Spearman
+          upper = list(continuous = wrap("cor", method = "spearman")),
+          # Escolhemos o gráfico de dispersão com a curva alisada para as variáveis
+          # contínuas da parte inferior
+          lower = list(continuous = "smooth_loess",
+          # Já na diagonal, veremos gráficos de barras para as variáveis discretas
+          diag = list(discrete="barDiag"))
+  )
 ```
 
 > Há uma série de outros parâmetros configuráveis, mas acredito que selecionei os principais dentre eles. Você pode encontrar mais em: [GGally - Extension to ‘ggplot2](https://ggobi.github.io/ggally/rd.html#ggpairs’)
@@ -143,7 +156,7 @@ Em seguida veremos uma outra forma de correlograma, feito pelo mesmo pacote. Est
 ## Um outro correlograma com o pacote GGally
 
 ```{r eval=TRUE, echo=FALSE, warning=FALSE}
-mtcars$cyl <- as.numeric(mtcars$cyl)
+auto_dataset$cylinders <- as.numeric(auto_dataset$cylinders)
 ```
 
 ```{r fig2, fig.height=4, fig.width=6, fig.align="center"}
@@ -155,8 +168,9 @@ A criação desse gráfico acima é ainda mais simples do que o anterior. Vejamo
 library(GGally)
 library(dplyr)
 
-mtcars %>%
-  select(mpg, disp, hp, cyl, wt) %>%
+auto_dataset %>%
+  select(mpg, displacement, cylinders, horsepower, weight) %>%
+  na.omit() %>%
   ggcorr(data = ., method = c("everything", "spearman"),
          label=TRUE, label_round=2,
          low="#e03531", mid="#f0bd27", high="#51b364")
@@ -206,8 +220,8 @@ Recomenda-se ainda evitar o uso de rótulos ou nomes longos para as variáveis, 
 - Encontrar relações entre variáveis a serem exploradas:
 
 ```{r fig3, eval=TRUE, echo=FALSE, fig.height=2.67, fig.width=4, fig.align="center"}
-mtcars %>%
-  ggplot(aes(x=disp, y=mpg))+
+auto_dataset %>%
+  ggplot(aes(x=displacement, y=mpg))+
   geom_point(stat="identity")+
   geom_smooth(se=FALSE, method="lm")+
   labs(x="Cilindrada", y="Milhas/galão")
@@ -226,14 +240,14 @@ $\mathbf{\hspace{3em} H_1}: \text{corr}(disp, mpg) < 0 \Leftrightarrow$ Veículo
 Definimos então o nível de confiança do teste (5%), a métrica de correlação (Spearman) e prosseguimos com o teste:
 
 ```{r, echo=TRUE, warning=FALSE}
-cor.test(mtcars$disp, mtcars$mpg,
+cor.test(auto_dataset$displacement, auto_dataset$mpg,
          alternative = "less", method = "spearman",
          conf.level=0.05)
 ```
 
-Dessa forma, sob a condição imposta por $\mathbf{H_0}$, o teste nos revela ser muito improvável (em relação a $\alpha$) observar na amostra uma correlação negativa entre essas variáveis tão ou mais expressiva quanto $-0,91$, conforme indicado pelo $\text{p-valor} = 3,185\cdot10^{-13}$.
+Dessa forma, sob a condição imposta por $\mathbf{H_0}$, o teste nos revela ser muito improvável (em relação a $\alpha$) observar na amostra uma correlação negativa entre essas variáveis tão ou mais expressiva quanto $-0,86$, conforme indicado pelo $\text{p-valor} < 2,2\cdot10^{-16}$.
 
-Portanto, rejeitamos a hipótese nula em favor da hipótese alternativa de que a relação entre cilindrada e a autonomia dos veículos é negativa.
+Portanto, rejeitamos a hipótese nula em favor da hipótese alternativa de que a relação entre cilindrada e a autonomia dos veículos é negativa. Isso se traduz da seguinte forma: carros de maior cilindrada *tendem* a consumir mais combustível.
 
 - Identificar possíveis relações causais
 
@@ -243,4 +257,4 @@ Essa parte, evidentemente, deve ser analisada com o maior cuidado possível, uma
 
 > Neste caso específico, isso claramente não pode ser feito, posto que a alteração no número de cilindros acarreta uma série de outras diferenças no veículo.
 
-Uma alternativa é realizar uma regressão de `mpg` (autonomia) sobre algumas outras variáveis como `cyl` (número de cilindros), `wt` (peso), `disp` (cilindrada) e etc, a fim de inferir a causalidade. Infelizmente, para tal precisaríamos de uma amostra mais ampla do que as 32 observações que temos disponível.
+Uma alternativa é realizar uma regressão de `mpg` (autonomia) sobre algumas outras variáveis como `cyl` (número de cilindros), `wt` (peso), `disp` (cilindrada) e etc, a fim de inferir a causalidade.

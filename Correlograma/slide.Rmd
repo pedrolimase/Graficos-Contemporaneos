@@ -1,35 +1,52 @@
 ---
-title: "Correlograma"
+title: "Gráficos Contemporâneos"
+subtitle: ""
+date: "30 de outubro de 2019"
+institute: "UnB - Universidade de Brasília"
 output: beamer_presentation
 ---
 
+# Correlograma
+
 ```{r setup, include=FALSE}
-library(GGally)
-library(knitr)
-library(dplyr)
+if (!require("pacman")){
+  install.packages("pacman")
+}
+
+library(pacman)
+p_load(GGally, knitr, dplyr, ISLR)
+
+auto_dataset <- Auto
+auto_dataset$cylinders <- as.factor(auto_dataset$cylinders)
 
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ## O que é uma matriz de correlação?
 
-É uma tabela que mostra o nível de correlação (Pearson, Spearman, Kendall, etc.) entre variáveis (quantitativas/ordinais). Veja um exemplo a seguir:
+É uma tabela que mostra o nível de correlação (Pearson, Spearman, Kendall) entre variáveis quantitativas/ordinais. Veja um exemplo a seguir:
 
 \footnotesize
-$\textbf{Tabela 1:}$ Correlação linear de Pearson entre variáveis do dataset `mtcars`
+$\textbf{Tabela 1:}$ Correlação linear de Pearson entre variáveis do dataset `Auto`
 \normalsize
 ```{r, echo=FALSE, warning=FALSE}
-mtcars %>%
-  select(mpg, disp, hp) %>%
+auto_dataset %>%
+  select(mpg, displacement, horsepower) %>%
     cor(method="pearson") %>%
       kable()
 ```
 
-Esse tipo de representação pode ser muito útil, mas com o aumento do número de variáveis envolvidas surge a dificuldade em identificar as correlações mais relevantes. Para facilitar essa análise, temos como alternativa o correlograma.
+- Simétrica em torno da diagonal principal
+- Diagonal principal irrelevante
+
+<!-- Esse tipo de representação pode ser muito útil, mas com o aumento do número de variáveis envolvidas surge a dificuldade em identificar as correlações mais relevantes. Para facilitar essa análise, temos como alternativa o correlograma. -->
 
 ## O que é o correlograma?
 
-O correlograma é um tipo de gráfico que facilita a visualização das matrizes de correlação e ainda permite explorar alguns outros aspectos dos dados, incorporando múltiplos gráficos e cores, além das medidas de correlação em si.
+- O correlograma é uma representação gráfica para uma matriz de correlação
+- Permite explorar outros aspectos dos dados, além da correlação entre variáveis
+
+<!-- O correlograma é um tipo de gráfico que facilita a visualização das matrizes de correlação e ainda permite explorar alguns outros aspectos dos dados, incorporando múltiplos gráficos e cores, além das medidas de correlação em si. -->
 
 ## Correlograma com o pacote GGally
 
@@ -41,12 +58,12 @@ O correlograma é um tipo de gráfico que facilita a visualização das matrizes
 ```{r fig1, eval=FALSE, echo=TRUE}
 library(GGally)
 
-ggpairs(data = mtcars,
-        columns = c("mpg", "disp", "hp"),
-        columnLabels = c("milhas/galão",
+ggpairs(data = auto_dataset,
+        columns = c("mpg", "displacement", "horsepower"),
+        columnLabels = c("autonomia",
                          "cilindrada",
-                         "cavalos"),
-        title = "dataset mtcars")
+                         "potência"),
+        title = "estou nevorso")
 ```
 
 **`data`**: data frame contendo os dados;
@@ -65,6 +82,10 @@ Em seguida veremos uma outra forma de correlograma, feito pelo mesmo pacote. Est
 
 ## Correlograma com o pacote GGally
 
+```{r include=FALSE}
+auto_dataset$cylinders <- as.numeric(auto_dataset$cylinders)
+```
+
 ```{r fig2, fig.height=4, fig.width=6}
 ```
 
@@ -73,13 +94,12 @@ Em seguida veremos uma outra forma de correlograma, feito pelo mesmo pacote. Est
 ```{r fig2, eval=FALSE, echo=TRUE}
 library(GGally); library(dplyr)
 
-mtcars %>%
-  select(mpg, disp, hp, cyl, wt) %>%
+auto_dataset %>%
+  select(mpg, displacement, horsepower,
+         cylinders, weight) %>%
   ggcorr(data = ., method = c("everything", "spearman"),
          label=TRUE, label_round=2,
          low="#e03531", mid="#f0bd27", high="#51b364")
-
-# Obs: escolher as variáveis previamente
 ```
 
 \small
@@ -103,26 +123,26 @@ mtcars %>%
 - Tratar dados faltantes (NAs);
 - Rótulos curtos para as variáveis.
 
-## Alguns dos usos do correlograma
+## Usos do correlograma / Aplicação
 
-- Encontrar relações entre variáveis a serem exploradas
+- Encontrar relações entre variáveis a serem exploradas (observando o correlograma)
 
 ```{r fig3, eval=TRUE, echo=FALSE, fig.height=1, fig.width=1.5, fig.align="center"}
-mtcars %>%
-  ggplot(aes(x=disp, y=mpg))+
-  geom_point(stat="identity")+
-  geom_smooth(se=FALSE, method="lm")+
+auto_dataset[sample(100), ] %>%
+  ggplot(aes(x = horsepower, y = displacement))+
+  geom_point(stat = "identity", alpha = 1/5)+
+  geom_smooth(se = FALSE, method = "lm")+
   theme(axis.text.x = element_blank(),
         axis.text.y = element_blank(),
         axis.ticks = element_blank())
 ```
 
-- Estabelecer hipóteses e inferir sobre correlações
+- Estabelecer hipóteses e inferir sobre correlações (aplicar teste de correlação)
 
 \small
 $\mathbf{\hspace{3em} H_0}$: $\text{corr}(disp, mpg) = 0$ $\mathbf{\hspace{3em} H_1}$: $\text{corr}(disp, mpg) < 0$
 \normalsize
 
-- Identificar possíveis relações causais
+- Identificar uma *possível* relação causal (aplicar regressão linear múltipla)
 
 $\hspace{3em}$ **Ex:** `veículos com mais cilindros consomem mais combustível?`

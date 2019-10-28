@@ -1,6 +1,5 @@
 ---
 title: "Gráficos Contemporâneos"
-subtitle: ""
 date: "30 de outubro de 2019"
 institute: "UnB - Universidade de Brasília"
 output: beamer_presentation

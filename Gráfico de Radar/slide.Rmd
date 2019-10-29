@@ -1,0 +1,150 @@
+---
+title: "Trabalho CE 2"
+author: "Juliana Degani"
+date: "outubro/2019"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(fmsb)
+
+```
+
+## Radar chart
+
+
+
+O gráfico de radar é também conhecido como gráfico de teia ou gráfico polar é equivalente a um gráfico de coordenadas paralelas, com os eixos dispostos radialmente, onde cada raio representando uma das variáveis e cada estrela representa uma única observação.
+
+Esse gráfico pode ser usado para responder às seguintes perguntas:
+
+- Quais observações são mais semelhantes, ou seja, existem grupos de observações?
+- Existem discrepâncias?
+
+
+No R studio é necessário utulizar o pacote "library(fmsb)"
+
+## Código exemplo de um gráfico simples
+
+- Criar um data frame com as notas de um determinado aluno
+
+```{r}
+notas <- as.data.frame(matrix(c(10,7, 8 ,0 ,9, 1, 5), ncol=7))
+colnames(notas) <-  c("Matemática", "Física", "Química" , "Ciências",
+                      "História", "Geografia", "Português")
+```
+
+- para usar o pacote, temos que adicionar duas linhas no dataframe:
+  - as notas mínimas e máximas de cada matéria
+ 
+```{r}
+notas <- rbind(rep(10,7) , rep(0,7) , notas)
+```
+ 
+
+- Os dados devem estar organizados da seguinte maneira:
+
+```{r comment='', echo=FALSE, results='asis'}
+ knitr::kable(notas, caption = "Notas do aluno", floating.environment="sidewaystable")
+```
+
+## Como fica o gráfico
+
+
+```{r notas}
+radarchart(notas)
+```
+
+
+## Customizar
+
+- com relação ao polígono é possível aterar:
+   - A cor da linha: pcol
+   - A cor de preenchimento: pfcol
+   - A largura da linha: plwd
+   
+- Com relação à grade é possível alterar:
+   - A cor da rede: cgcol
+   - Tipo de linha: cglty
+   - cor dos rótulos dos eixos; axisbcol
+   - largura da rede: cglwd
+   
+- com relação aos labels:
+   - Tamanho dos rótulos dos grupos: vlcex
+
+
+## Resultado:
+
+```{r}
+radarchart( notas , axistype=1 ,
+           
+  # polígono:
+  pcol="purple" ,          # altera a cor da linha
+  pfcol= rgb(1,0,1, 0.3) , # altera a cor do preenchimento
+                           # rgb: vermelho, verde e azul
+  plwd=4 ,                 # altera a largura da linha
+           
+  # grade
+  cglcol="grey",               # 3 cor da rede
+  cglty=1,                     # tipo de linha
+  axislabcol="grey",           # cor dos rótulos dos eixos
+  cglwd=1,                     # largura da rede
+           
+  # rótulos
+  vlcex=1.2 # tamanho dos rótulos
+)
+```
+
+
+
+## Comparações:
+
+Criar os dados das notas de 3 alunos:
+```{r}
+turma <- as.data.frame(matrix( sample( 0:15, 21 , replace=T) , ncol=7))
+                       
+colnames(turma) <- c("Matemática", "Física", "Química" , "Ciências",
+                     "História", "Geografia", "Português")
+rownames(turma) <- paste("Aluno" , letters[1:3] , sep="_")
+
+
+```
+
+Criar os máximos e mínimos de cada nota:
+(Reparem que dessa vez as notas variam de 0 a 15)
+```{r}
+turma <- rbind(rep(15,7) , rep(0,7) , turma)
+
+```
+
+
+Criar as 3 cores que queremos usar com o comando rgb
+```{r}
+cor_linha=c( rgb(0.2,0.5,0.5,1), rgb(0.8,0.2,0.5,1) , rgb(0.7,0.5,0.1,1) )
+cor_preenchimento=c( rgb(0.2,0.5,0.5,0.3), rgb(0.8,0.2,0.5,0.3) , rgb(0.7,0.5,0.1,0.3) )
+
+
+
+```
+
+
+Customiazações finais:
+```{r}
+radarchart( turma  , axistype=1 ,
+            # polígono
+            pcol=cor_linha , pfcol=cor_preenchimento , plwd=4 , plty=1,
+            # grade:
+            cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,15,7), cglwd=0.8,
+            # rótulos
+            vlcex=0.8
+)
+# Legenda
+
+legend(x=1, y=0.6, # posição 
+       legend = rownames(turma[-c(1,2),]), 
+       bty = "n", pch=20 # formato 
+       , col=cor_linha , text.col = "black", cex=1, # distrância entre as legendas
+       pt.cex=2) # tamanho
+```
+

@@ -1,0 +1,193 @@
+---
+title: 'Tutorial: Gráfico de coordenadas paralelas'
+author: "Emmanuel Cristiano Lopes de Moraes"
+date: "29/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = TRUE, echo = TRUE, cache = TRUE, error = TRUE, warning = FALSE)
+```
+
+
+
+```{r}
+library("GGally")
+library("hrbrthemes")
+library("viridis")
+library("dplyr")
+library("ggplot2")
+library("png")
+```
+
+
+## Definição
+
+Parallel plot ou  gráfico de coordenadas paralelas permite comparar o recurso de várias observações individuais (series) em um conjunto de variáveis numéricas. Cada barra vertical representa uma variável e geralmente possui sua própria escala. (As unidades podem até ser diferentes). Os valores são plotados como séries de linhas conectadas em cada eixo.
+
+## Íris
+
+O ìris, conjunto de dados, fornece quatro recursos (cada um representado com uma linha vertical) para 150 amostras de flores (cada uma representada com uma linha de cores). As amostras são agrupadas em três espécies. 
+
+
+
+```{r}
+data <- iris
+head(data)
+tail(data)
+```
+
+
+## Gráfico de Coordenadas paralelas (mais básico)
+
+```{r}
+require("ggplot2")
+require("hrbrthemes")
+require("GGally")
+```
+
+```{r}
+# (1ª parte) mais simples
+# Libraries
+library(GGally)
+
+# Data set is provided by R natively
+data <- iris
+
+# Plot
+ggparcoord(data, columns = 1:4, groupColumn = 5) 
+```
+
+## Parallel plot (Cor personalizada, tema, aparência geral)
+O gráfico abaixo destaca eficientemente que setosa tem pétalas menores, mas sua sépala tende a ser mais larga.
+```{r}
+# (2ª parte) Cor personalizada, tema, aparência geral
+# Libraries
+library(hrbrthemes)
+library(GGally)
+library(viridis)
+library(viridisLite)
+
+# Data set is provided by R natively
+data <- iris
+
+# Plot
+ggparcoord(data,
+           columns = 1:4, groupColumn = 5, order = "anyClass",
+           showPoints = TRUE, 
+           title = "Parallel Coordinate Plot for the Iris Data",
+           alphaLines = 0.3
+) + 
+  scale_color_viridis(discrete=TRUE) +
+  theme_ipsum()+
+  theme(
+    plot.title = element_text(size=10)
+  )
+```
+
+## Parallel plot (Dimensionamento)
+A escala transforma os dados brutos em uma nova escala comum a outras variáveis. É importante para comparar variáveis que não possuem a mesma unidade.
+```{r}
+# (3ª parte) Dimensionamento
+# Libraries
+library(hrbrthemes)
+library(GGally)
+library(viridis)
+library(viridisLite)
+
+ggparcoord(data,
+           columns = 1:4, groupColumn = 5, order = "anyClass",
+           scale="globalminmax",
+           showPoints = TRUE, 
+           title = "No scaling",
+           alphaLines = 0.3
+) + 
+  scale_color_viridis(discrete=TRUE) +
+  theme_ipsum()+
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=13)
+  ) +
+  xlab("")
+```
+
+## Parallel plot (Dimensionamento)
+
+```{r}
+# Libraries
+library(hrbrthemes)
+library(GGally)
+library(viridis)
+library(viridisLite)
+
+ggparcoord(data,
+    columns = 1:4, groupColumn = 5, order = "anyClass",
+    scale="uniminmax",
+    showPoints = TRUE, 
+    title = "Standardize to Min = 0 and Max = 1",
+    alphaLines = 0.3
+    ) + 
+  scale_color_viridis(discrete=TRUE) +
+  theme_ipsum()+
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=10)
+  ) +
+  xlab("")
+```
+
+## Parallel plot (Dimensionamento)
+
+```{r}
+# Libraries
+library(hrbrthemes)
+library(GGally)
+library(viridis)
+library(viridisLite)
+
+ggparcoord(data,
+    columns = 1:4, groupColumn = 5, order = "anyClass",
+    scale="std",
+    showPoints = TRUE, 
+    title = "Normalize univariately (substract mean & divide by sd)",
+    alphaLines = 0.3
+    ) + 
+  scale_color_viridis(discrete=TRUE) +
+  theme_ipsum()+
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=10)
+  ) +
+  xlab("")
+```
+
+
+## Destacar um grupo (Setosa)
+
+Destaque - um gráfico paralelo sendo um gráfico de linhas , a principal advertência é o gráfico de espaguete, onde muitas linhas se sobrepõem, tornando o gráfico ilegível. Existem várias soluções alternativas. Uma solução é destacar uma amostra específica ou um grupo de interesse específico:
+
+```{r}
+# Libraries
+library(GGally)
+library(dplyr)
+
+# Data set is provided by R natively
+data <- iris
+
+# Plot
+data %>%
+  arrange(desc(Species)) %>%
+  ggparcoord(
+    columns = 1:4, groupColumn = 5, order = "anyClass",
+    showPoints = TRUE, 
+    title = "Original",
+    alphaLines = 1
+  ) + 
+  scale_color_manual(values=c( "#69b3a2", "#E8E8E8", "#E8E8E8") ) +
+  theme_ipsum()+
+  theme(
+    legend.position="Default",
+    plot.title = element_text(size=10)
+  ) +
+  xlab("")
+```

@@ -108,7 +108,7 @@ auto_dataset %>%
 
 **`label_round`**: número de casas decimais no `label`;
 
-**`palette`**: esquema de cores.
+**`palette`**: escala de cores.
 
 \normalsize
 

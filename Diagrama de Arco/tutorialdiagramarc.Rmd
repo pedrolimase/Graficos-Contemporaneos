@@ -1,0 +1,190 @@
+---
+title: "Tutorial Diagram de Arcos"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r configuração, include=FALSE}
+library(igraph)
+library(ggraph)
+library(ggplot2)
+library(colormap)
+library(tinytex)
+library(rmarkdown)
+library(devtools)
+library(arcdiagram)
+knitr :: opts_chunk $ set ( eco  =  FALSE )
+```
+
+## O que é um Diagrama de Arcos ?
+
+É uma representação gráfica unidimensional para visualizar conexões entre um conjunto de entidades. A ideia principal é exibir os nós ao longo de um eixo, enquanto as conexões entre os nós são representadas com arcos.
+
+## Arcdiagram
+
+Arcdiagram é um pacote minimalista que fornece uma função básica para plotar diagramas de arco bonitos em R.
+
+## Instalação do pacote
+```{r, eval=FALSE, echo=TRUE}
+
+#instalando devtools 
+install.packages("devtools")
+
+#Carregadno load devtools
+library(devtools)
+
+#Fazendo download 'arcdiagram' usando 'install_github'
+
+remotes::install_github("gastonstat/arcdiagram")
+
+#carregadno arcdiagram
+library(arcdiagram)
+```
+
+## Uso básico do pacote Arcdiagram
+A estrutura é simples e consiste em uma função principal arcplot(), e uma função acessória xynodes(). Arcplot funciona da seguinte maneira, pega um objeto "edgelist" e plota as arestas como arcos. Edgelist é apenas uma matriz de duas colunas que fornece uma lista de arestas para um gráfico.
+
+## Função arcplot()
+
+Existem de diversos parâmetros da função arcplot(). O parâmetro principal é o edgelist, que é uma matriz de duas colunas com as arestas do gráfico, este é um parâmetro que obrigatoriamente deve ser fornecido, os demais são opcionais.
+
+### Argumentos dos arcos:
+Os arcos são plotados pelo arcplot() usando a função lines() internamente. Isto
+significa que os argumentos relacionados ao arco são basicamente os argumentos por trás das linhas ():
+
+ *`col.arcs`*:   cor dos arcos
+ 
+ *`lwd.arcs`*:   largura das linhas dos arcos
+ 
+ *`lty`*:        tipo de linha dos arcos
+ 
+ *`ljoin`*:      estilo de junção de linha para os arcos
+ 
+### Argumentos dos símbolos dos nós:
+Os símbolos dos nós são plotados por arcplot() usando a função points() internamente. O que isso significa é que os argumentos dos símbolos dos nós são basicamente os argumentos que points() usa:
+
+ *`show.nodes`*: indica se deseja mostrar símbolo nos nós
+ 
+ *`pch.nodes`*:  indica o símbolo a ser usado ao plotar nós
+ 
+ *`col.nodes`*:  cor dos símbolos dos nós
+ 
+ *`bg.nodes`*:   cor de preenchimento para os símbolos dos nós
+ 
+ *`lwd.nodes`*:  largura da linha para desenhar símbolos de nós
+ 
+
+### Argumentos dos rótulos dos nós:
+os rótulos dos nós são plotados por arcplot() usando o mtext(),
+função interna. Os argumentos dos rótulos dos nós estão relacionados aos argumentos por trás de mtext ():
+
+ *`show.labels`*:indica se os rótulos dos nós devem ser mostrados
+ 
+ *`labels`*:     vetor de caracteres com rótulos para os nós
+ 
+ *`col.labels`*: cor dos rótulos dos nós
+ 
+ *`las`*:        numérico em 0,1,2,3 determina o estilo dos rótulos dos eixos
+ 
+ *`font`*:       fonte usada para rótulos dos nós
+
+### Argumentos adicionais:
+Além dos argumentos anteriores, há alguns outros
+parâmetros no arcplot() que controlam a ordem dos nós e a orientação do layout:
+
+ *`sorted`*:     lógico para indicar se os nós devem ser sorteado 
+ 
+ *`decreasing`*: lógico para indicar o tipo de classificação
+ 
+ *`ordering`*:   vetor numérico opcional que fornece a ordem dos nós
+ 
+ *`horizontal`*: lógico indicando se deseja traçar na orientação horizontal
+
+
+## Exemplo:
+Vamos criar uma edgelist representando projetos entre colegas de trabalho: 
+
+### Criando uma edgelist
+```{r, echo=TRUE}
+lab = rbind(c("Emilia", "Kirk"), c("Emilia", "Yong"), c("Filipe", "Matteo"),
+c("Filipe", "Tyler"), c("Matteo", "Filipe"), c("Matteo", "Tyler"), c("Mehmet",
+"Rori"), c("Rori", "Kirk"), c("Rori", "Vitor"), c("Anna", "Mehmet"),
+c("Anna", "Yong"))
+
+arcplot(lab)
+```
+
+
+### Como ficou a edgelist
+```{r, echo=FALSE}
+lab
+```
+
+### Criando um gráfico
+Se quisermos plotar nosso gráfico usando o pacote igraph(), primeiro precisamos criar um objeto "graph" com a função graph.edgelist() e, em seguida, podemos usar o método plot() padrão:
+
+```{r, echo=TRUE}
+# Gráfico da edgelist
+glab = graph.edgelist(lab, directed = TRUE)
+# plot gráfico
+plot(glab)
+```
+
+### Podemos levar em consideração o grau dos nós - o grau de um nó é o número de arestas conectadas, para isso usaremos degrees():
+```{r, echo=TRUE}
+lab_degree = degree(glab)
+
+```
+```{r}
+lab_degree
+```
+
+### Digamos que queremos colocar pesos nas arestas para que elas reflitam algum tipo de valor. Nós podemos fazer isso atribuindo alguns números aleatórios:
+
+```{r, echo=FALSE}
+# Atribuindo pesos aleatórios as arestas
+set.seed(123)
+E(glab)$weight = round(runif(nrow(lab), 0.5, 4))
+l=2 * E(glab)$weight
+```
+```{r, echo=TRUE}
+arcplot(lab, lwd.arcs = l)
+```
+
+### Também podemos obter clusters dos nós usando a função clusters():
+```{r, echo=TRUE}
+gclus = clusters(glab)
+```
+
+```{r}
+gclus
+```
+
+### Aplicando cores que reflitam as associações de cluster:
+
+```{r, echo=TRUE}
+# Definindo dois tons de azul
+blues = c("#adccff", "#4272bf")
+# Vetor de cores com base na associação dos clusters
+cols = blues[gclus$membership]
+```
+
+### Aplicando a função arcplot()
+
+```{r, echo=TRUE}
+arcplot(lab, lwd.arcs = l, cex.nodes = lab_degree,
+col.nodes = cols)
+```
+
+### Vamos ordenar os nós de acordo com os clusters:
+```{r, echo=TRUE}
+arcplot(lab, lwd.arcs = l, col.nodes = cols, 
+        cex.nodes = lab_degree, bg.nodes = cols, ordering = order(gclus$membership))
+```
+
+### Vamos mudar o diagrama para uma orientação vertical:
+```{r, echo=TRUE}
+arcplot(lab, lwd.arcs = l,
+cex.nodes = lab_degree, col.nodes = cols, bg.nodes = cols,
+show.nodes = TRUE, ordering = order(gclus$membership), horizontal = FALSE)
+```

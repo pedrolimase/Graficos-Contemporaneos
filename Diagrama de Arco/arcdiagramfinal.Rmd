@@ -1,0 +1,213 @@
+---
+title: "Diagrama de Arcos"
+output:
+  slidy_presentation: default
+  beamer_presentation: default
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r configuração, include=FALSE}
+library(tidyverse)
+library(viridis)
+library(hrbrthemes)
+library(igraph)
+library(ggraph)
+library(ggplot2)
+library(colormap)
+library(tinytex)
+library(rmarkdown)
+library(devtools)
+knitr :: opts_chunk $ set ( eco  =  FALSE )
+```
+
+## O que é um Diagrama de Arco ?
+Um diagrama de arco é um tipo especial de gráfico de rede. É uma representação gráfica unidimensional para visualizar conexões entre um conjunto de entidades. A ideia principal é exibr os nós ao longo de um eixo, enquanto as conexões entre os nós são representadas com arcos.
+```{r, include=FALSE, echo=FALSE} 
+
+# Uma edge list simples
+links=data.frame(
+    source=c("A", "A", "A", "A", "B"),
+    target=c("B", "C", "D", "F","E")
+    )
+
+# Transformando em um objeto igraph
+mygraph <- graph_from_data_frame(links)
+
+# Daiagrama de arco
+p2 <-  ggraph(mygraph, layout="linear") + 
+  geom_edge_arc(edge_colour="black", edge_alpha=0.3, edge_width=0.2) +
+  geom_node_point( color="#69b3a2", size=5) +
+  geom_node_text( aes(label=name), repel = FALSE, size=8, color="#69b3a2", nudge_y=-0.1) +
+  theme_void() +
+  theme(
+    legend.position="none",
+    plot.margin=unit(rep(2,4), "cm")
+  ) 
+```
+```{r fig.height=4, fig.width=6}
+p2
+```
+
+## Gráficos interessantes
+
+### Les Miserables
+Gaston criou o diagrama de arco abaixo para visualizar os personagens do clássico de Victor Hugo, que se tornou um filme, Les Miserables. Cada personagem é conectado por um arco se eles aparecerem juntos no mesmo capítulo; quanto maior o arco, mais os personagens apareceram nos capítulos juntos. A ordem (e a cor) dos nós identificam grupos de caracteres que aparecem juntos no romance.
+
+![](C:/Users/Admin/Desktop/CAROL/Trabalho_ce2/miserables_arcplot.png)
+
+## Mapa de conversas do Twitter
+Esta visualização foi criada por Walter Rafelsberger,essa visualização mostra as conversas de cerca de 1500 usuários do serviço de microblog Twitter. Os arcos basicamente ligam os locais dos usuários que conversam entre si. A geocodificação foi feita filtrando as informações de localização das páginas de perfil dos usuários e pesquisando-as com nomes geográficos.
+
+![](C:/Users/Admin/Desktop/CAROL/Trabalho_ce2/600_big01.jpg)
+
+## Pacote Arcdiagram
+O Arcdiagram é um pacote para plotar diagramas básicos de arco em R.
+
+### Instalação do pacote arcdiagram
+```{r, echo=TRUE, eval=FALSE} 
+#É preciso usar o pacote devtools para instalar o arcdiagram no R
+install.packages("devtools")
+
+#Carregando devtools
+library(devtools)
+
+#Fazendo download 'arcdiagram' usando 'install_github'
+remotes::install_github("gastonstat/arcdiagram")
+
+#load arcdiagram
+library(arcdiagram)
+```
+
+## Uso básico do pacote Arcdiagram
+A estrutura é simples e consiste em uma função principal arcplot(), e uma função acessória xynodes(). Arcplot funciona da seguinte maneira, pega um objeto "edgelist" e plota as arestas como arcos. Edgelist é apenas uma matriz de duas colunas que fornece uma lista de arestas para um gráfico. Arcplot funciona da seguinte maneira, pega um objeto "edgelist" e plota as arestas como arcos.
+```{r, echo=TRUE} 
+library(arcdiagram)
+# Cria um gráfico com 8 nós
+star_graph = graph.star(8, mode = "out")
+
+#Adiciona nome aos nós
+V(star_graph)$name = paste("node", 1:vcount(star_graph), sep = "-")
+
+# Extrair edgelist
+star_edges = get.edgelist(star_graph)
+
+# plot arc diagram
+arcplot(star_edges)
+
+```
+
+## Exemplo 2
+Vamos criar uma edgelist representando projetos entre colegas de trabalho: 
+
+### Criando uma edgelist
+```{r, echo=TRUE}
+lab = rbind(c("Emilia", "Kirk"), c("Emilia", "Yong"), c("Filipe", "Matteo"),
+c("Filipe", "Tyler"), c("Matteo", "Filipe"), c("Matteo", "Tyler"), c("Mehmet",
+"Rori"), c("Rori", "Kirk"), c("Rori", "Vitor"), c("Anna", "Mehmet"),
+c("Anna", "Yong"))
+
+arcplot(lab)
+```
+
+
+## Como ficou a edgelist
+```{r, echo=FALSE}
+lab
+```
+
+## Criando um gráfico
+Se quisermos plotar nosso gráfico usando o pacote igraph(), primeiro precisamos criar um objeto "graph" com a função graph.edgelist() e, em seguida, podemos usar o método plot() padrão:
+
+```{r, echo=TRUE}
+# Gráfico da edgelist
+glab = graph.edgelist(lab, directed = TRUE)
+# plot gráfico
+plot(glab)
+```
+
+## Podemos levar em consideração o grau dos nós - o grau de um nó é o número de arestas conectadas, para isso usaremos degrees():
+```{r, echo=TRUE}
+lab_degree = degree(glab)
+
+```
+```{r}
+lab_degree
+```
+
+## Digamos que queremos colocar pesos nas arestas para que elas reflitam algum tipo de valor. Nós podemos fazer isso atribuindo alguns números aleatórios:
+
+```{r, echo=FALSE}
+# Atribuindo pesos aleatórios as arestas
+set.seed(123)
+E(glab)$weight = round(runif(nrow(lab), 0.5, 4))
+l=2 * E(glab)$weight
+```
+```{r, echo=TRUE}
+arcplot(lab, lwd.arcs = l)
+```
+
+## Também podemos obter clusters dos nós usando a função clusters():
+```{r, echo=TRUE}
+gclus = clusters(glab)
+```
+
+```{r}
+gclus
+```
+
+## Aplicando cores que reflitam as associações de cluster:
+
+```{r, echo=TRUE}
+# Definindo dois tons de azul
+blues = c("#adccff", "#4272bf")
+# Vetor de cores com base na associação dos clusters
+cols = blues[gclus$membership]
+```
+
+## Aplicando a função arcplot()
+
+```{r, echo=TRUE}
+arcplot(lab, lwd.arcs = l, cex.nodes = lab_degree,
+col.nodes = cols)
+```
+
+*`lwd.arcs`*:   largura das linhas dos arcos
+
+*`cex.nodes`*:  tamanho dos símbolos dos nós
+
+
+## Vamos ordenar os nós de acordo com os clusters:
+```{r, echo=TRUE}
+arcplot(lab, lwd.arcs = l, col.nodes = cols, 
+        cex.nodes = lab_degree, bg.nodes = cols, ordering = order(gclus$membership))
+```
+
+*`col.nodes`*:  cor dos símbolos dos nós
+
+*`bg.nodes`*:   cor de preenchimento para os símbolos dos nós
+
+*`ordering`*:   vetor numérico opcional que fornece a ordem dos nós
+
+## Vamos mudar o diagrama para uma orientação vertical:
+```{r, echo=TRUE}
+arcplot(lab, lwd.arcs = l,
+cex.nodes = lab_degree, col.nodes = cols, bg.nodes = cols,
+show.nodes = TRUE, ordering = order(gclus$membership), horizontal = FALSE)
+```
+
+*`show.nodes`*: indica se deseja mostrar símbolo nos nós
+
+*`horizontal`*: indica se deseja traçar na orientação horizontal
+
+## Desvantagens
+Os arcos são sensíveis à ordem dos nós. Quando os nós relacionados estão próximos uns dos outros, tem-se uma melhor visualização, o que ajuda a detectar clusters ou grupo de nós.
+
+
+
+
+

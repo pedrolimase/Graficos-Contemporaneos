@@ -42,10 +42,7 @@ auto_dataset %>%
 
 ## O que é o correlograma?
 
-- O correlograma é uma representação gráfica para uma matriz de correlação
-- Permite explorar outros aspectos dos dados, além da correlação entre variáveis
-
-<!-- O correlograma é um tipo de gráfico que facilita a visualização das matrizes de correlação e ainda permite explorar alguns outros aspectos dos dados, incorporando múltiplos gráficos e cores, além das medidas de correlação em si. -->
+O correlograma é uma representação gráfica para matrizes de correlação. Permite explorar alguns outros aspectos dos dados, incorporando múltiplos gráficos e cores, além das medidas de correlação em si.
 
 ## Correlograma com o pacote GGally
 
@@ -62,7 +59,7 @@ ggpairs(data = auto_dataset,
         columnLabels = c("autonomia",
                          "cilindrada",
                          "potência"),
-        title = "estou nevorso")
+        title = "correlograma no dataset Auto")
 ```
 
 **`data`**: data frame contendo os dados;
@@ -95,10 +92,10 @@ library(GGally); library(dplyr)
 
 auto_dataset %>%
   select(mpg, displacement, horsepower,
-         cylinders, weight) %>%
+         cylinders, weight, acceleration) %>%
   ggcorr(data = ., method = c("everything", "spearman"),
          label=TRUE, label_round=2,
-         low="#e03531", mid="#f0bd27", high="#51b364")
+         palette = "grey50")
 ```
 
 \small
@@ -111,7 +108,7 @@ auto_dataset %>%
 
 **`label_round`**: número de casas decimais no `label`;
 
-**`low`**, **`mid`**, **`high`**: cores inferiores, intermediárias e superiores da escala de cores, respectivamente.
+**`palette`**: esquema de cores.
 
 \normalsize
 
@@ -124,7 +121,7 @@ auto_dataset %>%
 
 ## Usos do correlograma / Aplicação
 
-- Encontrar relações entre variáveis a serem exploradas (observando o correlograma)
+- Encontrar relações entre variáveis a serem exploradas
 
 ```{r fig3, eval=TRUE, echo=FALSE, fig.height=1, fig.width=1.5, fig.align="center"}
 auto_dataset[sample(100), ] %>%

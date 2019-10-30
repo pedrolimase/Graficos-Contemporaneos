@@ -1,7 +1,7 @@
 ---
 title: "Gráfico de Radar"
 author: "Juliana Paula"
-date: "outubro/2019"
+date: "Outubro/2019"
 output: slidy_presentation
 ---
 
@@ -105,7 +105,7 @@ turma <- as.data.frame(matrix( sample( 0:15, 21 , replace=T) , ncol=7))
                        
 colnames(turma) <- c("Matemática", "Física", "Química" , "Ciências",
                      "História", "Geografia", "Português")
-rownames(turma) <- paste("Aluno" , letters[1:3] , sep="_")
+rownames(turma) <- paste("Aluno" , letters[1:3] , sep=" ")
 
 
 ```
@@ -121,7 +121,7 @@ turma <- rbind(rep(15,7) , rep(0,7) , turma)
 Criar as 3 cores que queremos usar com o comando rgb
 ```{r}
 cor_linha=c( rgb(0.2,0.5,0.5,1), rgb(0.8,0.2,0.5,1) , rgb(0.7,0.5,0.1,1) )
-cor_preenchimento=c( rgb(0.2,0.5,0.5,0.3), rgb(0.8,0.2,0.5,0.3) , rgb(0.7,0.5,0.1,0.3) )
+cor_preenchimento=c(rgb(0.2,0.5,0.5,0.3), rgb(0.8,0.2,0.5,0.3) , rgb(0.7,0.5,0.1,0.3) )
 
 
 

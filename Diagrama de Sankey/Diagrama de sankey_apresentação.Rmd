@@ -1,0 +1,205 @@
+---
+title: "Diagrama de Sankey"
+date: "30 de outubro de 2019"
+output: ioslides_presentation
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = TRUE, echo = FALSE, cache = TRUE, error = TRUE, warning = FALSE, message = FALSE)
+```
+
+## O que é?
+
+  Um diagrama sankey consiste em três conjuntos de elementos: os  nós , os  links e as instruções que determinam suas posições. É uma visualização usada para representar um fluxo de um conjunto de valores para outro. As coisas que estão sendo conectadas são chamadas nós e as conexões são chamadas links.  Como tal ele possui um sentido de leitura para gerar senso de interpretação.  
+
+##
+O fluxo envolve a transferência de alguma propriedade física (como energia por exemplo) de uma etapa para outra.  Estas transferências são representadas por setas (ou linhas) cujas espessuras são proporcionais a quantidade da propriedade física que está sendo transferida.
+
+## História
+
+  O inventor do método foi o capitão irlandês Matthew Henry Sankey, que usou este tipo de diagrama em 1898 para demonstrar a eficiência energética de um motor a vapor. Desde então, muitos usos são aplicados neste tipo de diagrama além de fluxos de energia.  Podemos utilizar para qualquer transferência de itens entre processos, que podem ser equilibradas através de um balanço como por exemplo, finanças entre países, fluxo de geração de gases de efeito estufa entre outros.
+
+## Precaução
+
+Uma condição básica para qualquer fluxo é a garantia da continuidade, ou seja, esta equação deve ser sempre atendida:
+
+Entrada do sistema = Saída - Armazenado
+
+## Como fazer um Diagrama de Sankey
+
+```{r echo=TRUE, warning=FALSE}
+
+library(networkD3)
+library(dplyr)
+
+# A connection data frame is a list of flows with intensity for each flow
+links <- data.frame(
+  source=c("group_A","group_A", "group_B", "group_C", "group_C", "group_E"), 
+  target=c("group_C","group_D", "group_E", "group_F", "group_G", "group_H"), 
+  value=c(2,3, 2, 3, 1, 3)
+)
+
+# From these flows we need to create a node data frame: it lists every entities involved in the flow
+nodes <- data.frame(
+  name=c(as.character(links$source), 
+         as.character(links$target)) %>% unique()
+)
+
+
+```
+
+##
+
+```{r, echo = TRUE, results = 'hide'}
+# With networkD3, connection must be provided using id, not using real name like in the links dataframe.. So we need to reformat it.
+links$IDsource <- match(links$source, nodes$name)-1 
+links$IDtarget <- match(links$target, nodes$name)-1
+
+# Make the Network
+p <- sankeyNetwork(Links = links, Nodes = nodes,
+                   Source = "IDsource", Target = "IDtarget",
+                   Value = "value", NodeID = "name", 
+                   sinksRight=FALSE)
+p
+
+# save the widget
+# library(htmlwidgets)
+# saveWidget(p, file=paste0( getwd(), "/HtmlWidget/sankeyBasic1.html"))
+
+```
+
+##
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+library(networkD3)
+library(dplyr)
+
+# A connection data frame is a list of flows with intensity for each flow
+links <- data.frame(
+  source=c("group_A","group_A", "group_B", "group_C", "group_C", "group_E"), 
+  target=c("group_C","group_D", "group_E", "group_F", "group_G", "group_H"), 
+  value=c(2,3, 2, 3, 1, 3)
+)
+
+# From these flows we need to create a node data frame: it lists every entities involved in the flow
+nodes <- data.frame(
+  name=c(as.character(links$source), 
+         as.character(links$target)) %>% unique()
+)
+
+
+
+# With networkD3, connection must be provided using id, not using real name like in the links dataframe.. So we need to reformat it.
+links$IDsource <- match(links$source, nodes$name)-1 
+links$IDtarget <- match(links$target, nodes$name)-1
+
+# Make the Network
+p <- sankeyNetwork(Links = links, Nodes = nodes,
+                   Source = "IDsource", Target = "IDtarget",
+                   Value = "value", NodeID = "name", 
+                   sinksRight=FALSE)
+p
+
+# save the widget
+# library(htmlwidgets)
+# saveWidget(p, file=paste0( getwd(), "/HtmlWidget/sankeyBasic1.html"))
+```
+
+## Exemplo númerico
+<img src="C:\Users\Thomaz\Desktop\imagens\exemplo.png" width="800">
+
+##
+
+Primeiro ponto que devemos atentar na construção é o atendimento à equação de continuidade.  O balanço das entradas menos as saídas tem que resultar no acúmulo de energia do sistema.  Como não existe acúmulo de energia, a soma das entradas tem que ser iguais as saídas.
+
+Para cada 100 unidades da energia de entrada (do combustível), apenas 25 são efetivamente convertidas em trabalho  mecânico.
+
+## Outro exemplo Diagrama de Sankey multinível
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Load energy projection data
+URL <- "https://cdn.rawgit.com/christophergandrud/networkD3/master/JSONdata/energy.json"
+Energy <- jsonlite::fromJSON(URL)
+
+
+# Now we have 2 data frames: a 'links' data frame with 3 columns (from, to, value), and a 'nodes' data frame that gives the name of each node.
+head( Energy$links )
+head( Energy$nodes )
+
+```
+
+##
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+library(networkD3)
+
+# Load energy projection data
+URL <- "https://cdn.rawgit.com/christophergandrud/networkD3/master/JSONdata/energy.json"
+Energy <- jsonlite::fromJSON(URL)
+
+
+# Now we have 2 data frames: a 'links' data frame with 3 columns (from, to, value), and a 'nodes' data frame that gives the name of each node.
+#head( Energy$links )
+#head( Energy$nodes )
+
+# Thus we can plot it
+p <- sankeyNetwork(Links = Energy$links, Nodes = Energy$nodes, Source = "source",
+                   Target = "target", Value = "value", NodeID = "name",
+                   units = "TWh", fontSize = 12, nodeWidth = 30)
+
+p
+
+# save the widget
+# library(htmlwidgets)
+# saveWidget(p, file=paste0( getwd(), "/HtmlWidget/sankeyEnergy.html"))
+
+```
+
+## Exemplo prático Sankey:
+
+Aluno de PE(P1, P2, P3, Menção)
+
+<img src="C:\Users\Thomaz\Desktop\imagens\Sankey.png" width="500">
+
+## Diagrama de  redes
+
+Os diagramas de rede mostram interconexões entre um conjunto de entidades. Cada entidade é representada por um vértice. As conexões entre os nós são representadas por links.
+
+## Como fazer?
+
+A partir de uma matriz de correlação
+
+```{r, eval=F, echo=T}
+adjm <- cor(cor.tema)
+adjm[ adjm<0.3 ] <- 0
+
+ggcorr(adjm)
+
+network <- graph_from_adjacency_matrix(adjm, weighted=T, diag=F, mode = "undirected")
+```
+
+##
+
+<img src="C:\Users\Thomaz\Desktop\imagens\redes.jpeg" width="800">
+
+## TCC
+
+ Movimentação dos alunos e docentes de outros países para a UnB
+
+<img src="C:\Users\Thomaz\Desktop\imagens\todos.png" width="800">
+
+##
+
+### Referência
+
++ https://www.biomassabioenergia.com.br/imprensa/diagrama-de-sankey-ferramenta-inseparavel-do-gestor-de-eficiencia-energetica/20180619-113732-l672
+
++ https://developers.google.com/chart/interactive/docs/gallery/sankey
+
++ https://www.displayr.com/sankey-diagrams-r/
+
+
+

@@ -258,3 +258,11 @@ Essa parte, evidentemente, deve ser analisada com o maior cuidado possível, uma
 > Neste caso específico, isso claramente não pode ser feito, posto que a alteração no número de cilindros acarreta uma série de outras diferenças no veículo.
 
 Uma alternativa é realizar uma regressão de `mpg` (autonomia) sobre algumas outras variáveis como `cyl` (número de cilindros), `wt` (peso), `disp` (cilindrada) e etc, a fim de inferir a causalidade.
+
+***
+
+## Referências:
+
+[1] Briatte, *'ggcorr: correlation matrixes with ggplot2'*. Disponível em: https://briatte.github.io/ggcorr/#example-basketball-statistics
+
+[2] CRAN, *'GGally: Extension to 'ggplot2'*. Disponível em: https://cran.r-project.org/web/packages/GGally/GGally.pdf
